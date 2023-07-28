@@ -4,7 +4,7 @@
 
     <groupId>org.parttio</groupId>
     <artifactId>maplibre</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>MapLibreGL }&gt; add-on</name>
     <description>An extension to Vaadin that provides a Java API for MapLibreGL slippy map component with modern vector layer support.</description>
     <url>https://github.com/parttio/maplibre</url>
@@ -48,7 +48,7 @@
         <url>https://github.com/parttio/maplibre</url>
         <connection>scm:git:git://github.com/parttio/maplibre.git</connection>
         <developerConnection>scm:git:ssh://git@github.com:/parttio/maplibre.git</developerConnection>
-        <tag>maplibre-0.0.1</tag>
+        <tag>HEAD</tag>
     </scm>
     
     <distributionManagement>
