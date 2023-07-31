@@ -11,21 +11,12 @@ public class Marker extends Layer {
     }
 
     public void withPopup(String html) {
-        map.getElement().executeJs("""
-                const map = this.map;
-                const component = this;
-                const action = () => {
-                    const marker = component.markers['%s'];
-                    const popup = new maplibregl.Popup({closeButton: true, closeOnClick: true})
-                        .setLngLat(marker.getLngLat())
-                        .setHTML('%s');
-                    marker.setPopup(popup);
-                };
-                if(!this.styleloaded) {
-                    map.on('load', action);
-                } else {
-                    action();
-                }
-                """.formatted(id, html));
+        map.js("""
+            const marker = component.markers['%s'];
+            const popup = new maplibregl.Popup({closeButton: true, closeOnClick: true})
+                .setLngLat(marker.getLngLat())
+                .setHTML('%s');
+            marker.setPopup(popup);
+        """.formatted(id, html));
     }
 }

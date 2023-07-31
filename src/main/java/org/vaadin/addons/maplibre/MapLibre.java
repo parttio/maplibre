@@ -224,7 +224,7 @@ public class MapLibre extends Div {
      * either right away, or right after initial loading is done.
      * @param js the JS to execute, map & component variables are initialized automatically.
      */
-    private void js(String js) {
+    protected void js(String js) {
         getElement().executeJs("""
             const map = this.map;
             const component = this;
