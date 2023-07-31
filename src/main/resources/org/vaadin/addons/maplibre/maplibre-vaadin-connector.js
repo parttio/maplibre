@@ -17,3 +17,15 @@ this.init = function(styleObject, styleUrl, center, zoom) {
     setTimeout(() => this.map.resize(),10);
 }
 
+this.myAddLineLayer = function(name, source, sourceLayer, paintJson) {
+    var layer = {
+        'id': name,
+        'type': 'line',
+        'source': source,
+        'paint': paintJson
+    }
+    if(sourceLayer) {
+        layer['source-layer'] = sourceLayer;
+    }
+    this.map.addLayer(layer);
+}

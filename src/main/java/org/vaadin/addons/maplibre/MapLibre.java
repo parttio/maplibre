@@ -122,22 +122,8 @@ public class MapLibre extends Div {
      protected Layer addLineLayer(String name, String source, String sourceLayer, String paintJson, Geometry geom) {
         if(sourceLayer == null) {
             sourceLayer = "";
-        } else {
-            sourceLayer = "'source-layer': '%s',".formatted(sourceLayer);
         }
-        js("""
-            map.addLayer({
-              'id': '%s',
-              'type': 'line',
-              'source': '%s',
-               %s
-              'layout': {
-                'line-join': 'round',
-                'line-cap': 'round'
-              },
-              'paint': %s
-            });
-        """.formatted(name, source, sourceLayer, paintJson));
+        js("component.myAddLineLayer('%s','%s','%s',%s);".formatted(name, source, sourceLayer, paintJson));
         return new Layer(this, name, geom);
     }
 
