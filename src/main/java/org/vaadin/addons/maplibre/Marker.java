@@ -11,12 +11,12 @@ public class Marker extends Layer {
     }
 
     public void withPopup(String html) {
-        map.js("""
-            const marker = component.markers['%s'];
+        map.js(STR."""
+            const marker = component.markers['\{id}'];
             const popup = new maplibregl.Popup({closeButton: true, closeOnClick: true})
                 .setLngLat(marker.getLngLat())
-                .setHTML('%s');
+                .setHTML('\{html}');
             marker.setPopup(popup);
-        """.formatted(id, html));
+        """);
     }
 }
