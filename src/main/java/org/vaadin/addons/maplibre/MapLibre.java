@@ -48,24 +48,12 @@ public class MapLibre extends Div {
         setWidth("800px");
         setHeight("500px");
 
-        getElement().executeJs("""
-                var style = %s;
-                if(!style) {
-                    style = '%s';
-                }
-                const component = this;
-                this.map = new maplibregl.Map({
-                  container: this,
-                  style: style,
-                  center: %s,
-                  zoom: %s
-                });
-                this.map.on('load', () => {
-                    component.styleloaded = true;
-                });
-                this.map.addControl(new maplibregl.NavigationControl());
-                setTimeout(() => this.map.resize(),10);
-                """.formatted(style, styleUrl, toJs(getCenter()), getZoomLevel()));
+        try {
+            getElement().executeJs(IOUtils.toString(getClass().getResourceAsStream("maplibre-vaadin-connector.js"), Charset.defaultCharset()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        getElement().executeJs("this.init(%s,'%s',%s,%s)".formatted(style, styleUrl, toJs(getCenter()), getZoomLevel()));
     }
 
     private int getZoomLevel() {
