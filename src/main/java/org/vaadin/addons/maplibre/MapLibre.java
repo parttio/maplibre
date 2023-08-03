@@ -1,20 +1,26 @@
 package org.vaadin.addons.maplibre;
 
+import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.html.Div;
 import org.apache.commons.io.IOUtils;
+import org.apache.velocity.VelocityContext;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
+import org.vaadin.addons.velocitycomponent.AbstractVelocityJsComponent;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -22,7 +28,8 @@ import java.util.UUID;
  */
 @JavaScript("https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js")
 @StyleSheet("https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css")
-public class MapLibre extends Div {
+@Tag("div")
+public class MapLibre extends AbstractVelocityJsComponent implements HasSize, HasStyle {
 
     private Coordinate center = new Coordinate(0, 0);
     private int zoomLevel = 15;
@@ -43,36 +50,39 @@ public class MapLibre extends Div {
         }
     }
 
-    private void init(String style, String styleUrl) {
+    private void init(String styleJson, String styleUrl) {
         setId("map");
         setWidth("800px");
         setHeight("500px");
-
-        getElement().executeJs("""
-                var style = %s;
+        velocityJs("""
+                var style = $style;
                 if(!style) {
-                    style = '%s';
+                    style = '$styleUrl';
                 }
                 const component = this;
                 this.map = new maplibregl.Map({
                   container: this,
                   style: style,
-                  center: %s,
-                  zoom: %s
+                  center: $GeoJsonHelper.toJs($this.center),
+                  zoom: $this.zoomLevel
                 });
                 this.map.on('load', () => {
                     component.styleloaded = true;
                 });
                 this.map.addControl(new maplibregl.NavigationControl());
-                setTimeout(() => this.map.resize(),10);
-                """.formatted(style, styleUrl, toJs(getCenter()), getZoomLevel()));
+                setTimeout(() => this.map.resize(),0);
+                """, Map.of(
+                        "style", styleJson == null ? "null" : styleJson, // Map.of is not nullsafe :-(
+                        "styleUrl", styleUrl == null ? "null" : styleUrl
+                    )
+        );
     }
 
-    private int getZoomLevel() {
+    public Integer getZoomLevel() {
         return 15;
     }
 
-    private Coordinate getCenter() {
+    public Coordinate getCenter() {
         return center;
     }
 
@@ -85,19 +95,13 @@ public class MapLibre extends Div {
         }
     }
 
-    private static String toJs(Coordinate coord) {
-        return "[" + coord.getX() + "," + coord.getY() + "]";
-    }
-
     private void addSource(String name, Geometry geometry) {
-        GeoJsonWriter writer = new GeoJsonWriter();
-        writer.setEncodeCRS(false);
         js("""
-            map.addSource('%s', {
+            map.addSource('$name', {
               'type': 'geojson',
-              'data': %s
+              'data': $GeoJsonHelper.toJs($geometry)
             });
-        """.formatted(name, writer.write(geometry)));
+        """, Map.of("name", name, "geometry", geometry));
     }
 
     public Layer addLineLayer(Geometry geometry, String styleJson) {
@@ -127,7 +131,7 @@ public class MapLibre extends Div {
               'layout': {},
               'paint': %s
             });
-        """.formatted(name, source, sourceLayer, paintJson));
+        """.formatted(name, source, sourceLayer, paintJson), Collections.emptyMap());
         return new Layer(this, name, geom);
     }
 
@@ -139,58 +143,65 @@ public class MapLibre extends Div {
         }
         js("""
             map.addLayer({
-              'id': '%s',
+              'id': '$name',
               'type': 'line',
-              'source': '%s',
-               %s
+              'source': '$source',
+               $sourceLayer
               'layout': {
                 'line-join': 'round',
                 'line-cap': 'round'
               },
-              'paint': %s
+              'paint': $paintJson
             });
-        """.formatted(name, source, sourceLayer, paintJson));
+        """, Map.of("name", name, "source", source, "sourceLayer", sourceLayer, "paintJson", paintJson));
         return new Layer(this, name, geom);
     }
 
     public void removeLayer(Layer layer) {
         if (layer instanceof Marker m) {
             js("""
-                    component.markers['%s'].remove();
-            """.formatted(m.id));
+                component.markers['$id'].remove();
+            """, Map.of("id", m.id));
         } else {
             js("""
-                map.removeLayer('%s');
-                map.removeSource('%s');
-            """.formatted(layer.id, layer.id));
+                map.removeLayer('$id');
+                map.removeSource('$id');
+            """, Map.of("id", layer.id));
         }
     }
 
     public void addSource(String name, String sourceDeclarationJson) {
         js("""
-            map.addSource('%s', %s);
-        """.formatted(name, sourceDeclarationJson));
+            map.addSource('$name', $sourceDeclarationJson);
+        """, Map.of("name", name, "sourceDeclarationJson", sourceDeclarationJson));
     }
 
     public Marker addMarker(double x, double y) {
         String id = UUID.randomUUID().toString();
         js("""
             component.markers = component.markers || {};
-            component.markers['%s'] = new maplibregl.Marker()
-                    .setLngLat([%s, %s])
+            component.markers['$id'] = new maplibregl.Marker()
+                    .setLngLat([$x, $y])
                     .addTo(map);
-        """.formatted(id, x, y));
+        """, Map.of("id", id, "x", x, "y", y));
         return new Marker(this, id, new Coordinate(x, y));
+    }
+
+    @Override
+    protected VelocityContext getVelocityContext() {
+        VelocityContext velocityContext = super.getVelocityContext();
+        velocityContext.put("GeoJsonHelper", GeoJsonHelper.class);
+        return velocityContext;
     }
 
     public void setCenter(double x, double y) {
         this.center = new Coordinate(x, y);
-        js("map.setCenter(%s);".formatted(toJs(center)));
+        js("map.setCenter($GeoJsonHelper.toJs($this.center));");
     }
 
     public void setZoomLevel(int zoomLevel) {
         this.zoomLevel = zoomLevel;
-        getElement().executeJs("this.map.setZoom(%s);".formatted(zoomLevel));
+        js("map.setZoom($this.zoomLevel);");
     }
 
     public void fitTo(Geometry geom, double padding) {
@@ -201,13 +212,6 @@ public class MapLibre extends Div {
             [%s, %s], [%s, %s]);;
             map.fitBounds(bounds);
         """.formatted(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY()));
-    }
-
-    private String toJs(Geometry envelopeInternal) {
-        GeoJsonWriter writer = new GeoJsonWriter();
-        writer.setEncodeCRS(false);
-        String written = writer.write(envelopeInternal);
-        return written;
     }
 
     public void flyTo(double x, double y, double zoom) {
@@ -224,8 +228,8 @@ public class MapLibre extends Div {
      * either right away, or right after initial loading is done.
      * @param js the JS to execute, map & component variables are initialized automatically.
      */
-    protected void js(String js) {
-        getElement().executeJs("""
+    protected void js(String js, Map<String, Object> variables) {
+        velocityJs("""
             const map = this.map;
             const component = this;
             const action = () => {
@@ -236,7 +240,11 @@ public class MapLibre extends Div {
             } else {
                 action();
             }
-        """.formatted(js));
+        """.formatted(js), variables);
+    }
+
+    protected void js(String js) {
+        js(js, Collections.emptyMap());
     }
 
     public void flyTo(Geometry geometry, int i) {

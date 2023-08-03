@@ -62,9 +62,7 @@ public class OsmViaMapTiler extends VerticalLayout {
                 });
             });
             add(new HorizontalLayout(b, seeWorld, plotYourself));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        } catch (ParseException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
