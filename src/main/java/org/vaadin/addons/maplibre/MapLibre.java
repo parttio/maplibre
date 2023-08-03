@@ -104,19 +104,19 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         """, Map.of("name", name, "geometry", geometry));
     }
 
-    public Layer addLineLayer(Geometry geometry, String styleJson) {
+    public Layer addLineLayer(Geometry geometry, LinePaint linePaint) {
         String id = UUID.randomUUID().toString();
         addSource(id, geometry);
-        return addLineLayer(id, id, null, styleJson, geometry);
+        return addLineLayer(id, id, null, linePaint, geometry);
     }
 
-    public Layer addFillLayer(Polygon polygon, String styleJson) {
+    public Layer addFillLayer(Polygon polygon, FillPaint style) {
         String id = UUID.randomUUID().toString();
         addSource(id, polygon);
-        return addFillLayer(id, id, null, styleJson, polygon);
+        return addFillLayer(id, id, null, style, polygon);
     }
 
-    protected Layer addFillLayer(String name, String source, String sourceLayer, String paintJson, Geometry geom) {
+    protected Layer addFillLayer(String name, String source, String sourceLayer, FillPaint paintJson, Geometry geom) {
         if(sourceLayer == null) {
             sourceLayer = "";
         } else {
@@ -135,7 +135,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         return new Layer(this, name, geom);
     }
 
-     protected Layer addLineLayer(String name, String source, String sourceLayer, String paintJson, Geometry geom) {
+     protected Layer addLineLayer(String name, String source, String sourceLayer, LinePaint paint, Geometry geom) {
         if(sourceLayer == null) {
             sourceLayer = "";
         } else {
@@ -151,9 +151,9 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 'line-join': 'round',
                 'line-cap': 'round'
               },
-              'paint': $paintJson
+              'paint': $paint
             });
-        """, Map.of("name", name, "source", source, "sourceLayer", sourceLayer, "paintJson", paintJson));
+        """, Map.of("name", name, "source", source, "sourceLayer", sourceLayer, "paint", paint));
         return new Layer(this, name, geom);
     }
 

@@ -45,8 +45,8 @@ public class FinnishOpenDataExample extends VerticalLayout {
 
             addSource("kiinteisto-avoin", "{'type':'vector', 'url':\"https://avoin-karttakuva.maanmittauslaitos.fi/kiinteisto-avoin/v3/kiinteistojaotus/WGS84_Pseudo-Mercator/tilejson.json?api-key=95065def-f53b-44d6-b429-769c3d504e13\"}");
 
-            addLineLayer("rajat", "kiinteisto-avoin", "KiinteistorajanSijaintitiedot", "{'line-color' : 'rgba(255,0,0,1)','line-width' : 2}", null);
-            addFillLayer("alueet", "kiinteisto-avoin", "PalstanSijaintitiedot", "{'fill-color' : 'rgba(255,0,0,0.015)'}", null);
+            addLineLayer("rajat", "kiinteisto-avoin", "KiinteistorajanSijaintitiedot", new LinePaint("rgba(255,0,0,1)", 2.0), null);
+            addFillLayer("alueet", "kiinteisto-avoin", "PalstanSijaintitiedot", new FillPaint("rgba(255,0,0,0.015)", null), null);
 
             // Add a client side click listener to the map, to get the property id
             // from the base layer and pass that to server side method
@@ -84,7 +84,7 @@ public class FinnishOpenDataExample extends VerticalLayout {
                 GeometryCollection geom = (GeometryCollection) new GeoJsonReader().read(responsegeojson);
                 for(int i = 0; i < geom.getNumGeometries(); i++) {
                     Polygon polygon = (Polygon) geom.getGeometryN(i);
-                    highlightedLayers.add(addFillLayer(polygon, "{'fill-color': 'red', 'fill-opacity': 0.5}"));
+                    highlightedLayers.add(addFillLayer(polygon, new FillPaint("red", 0.5)));
                 }
                 // Show the raw (but formatted) details in a pre element
                 ObjectMapper mapper = new ObjectMapper();

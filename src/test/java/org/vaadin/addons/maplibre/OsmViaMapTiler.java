@@ -34,7 +34,7 @@ public class OsmViaMapTiler extends VerticalLayout {
 
             Polygon polygon = (Polygon) new WKTReader().read("POLYGON((22.290 60.428, 22.310 60.429, 22.31 60.47, 22.28 60.47, 22.290 60.428))");
 
-            map.addFillLayer(polygon, "{'fill-color': 'red', 'fill-opacity': 0.2}");
+            map.addFillLayer(polygon, new FillPaint("red", 0.2));
 
             map.setCenter(22.300, 60.452);
             map.setZoomLevel(13);
