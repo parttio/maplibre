@@ -23,6 +23,6 @@ TODO add integration tests :-)
 
 With commit rights to the repository, issue:
 
-    mvn release:prepare release:cleanup
+    mvn release:prepare release:clean
 
 Configured GH action will build a release and push to Maven Central.

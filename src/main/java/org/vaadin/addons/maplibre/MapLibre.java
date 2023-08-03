@@ -226,7 +226,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     /**
      * Executes given JS in the context of the map component,
      * either right away, or right after initial loading is done.
-     * @param js the JS to execute, map & component variables are initialized automatically.
+     * @param js the JS to execute, map and component variables are initialized automatically.
      */
     protected void js(String js, Map<String, Object> variables) {
         velocityJs("""
