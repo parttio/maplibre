@@ -3,6 +3,8 @@ package org.vaadin.addons.maplibre;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 
+import java.util.Map;
+
 public class Marker extends Layer {
 
 
@@ -12,11 +14,11 @@ public class Marker extends Layer {
 
     public void withPopup(String html) {
         map.js("""
-            const marker = component.markers['%s'];
+            const marker = component.markers['$id'];
             const popup = new maplibregl.Popup({closeButton: true, closeOnClick: true})
                 .setLngLat(marker.getLngLat())
-                .setHTML('%s');
+                .setHTML('$html');
             marker.setPopup(popup);
-        """.formatted(id, html));
+        """.formatted(id, html), Map.of("id", id, "html", html));
     }
 }
