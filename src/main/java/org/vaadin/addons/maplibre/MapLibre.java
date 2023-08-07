@@ -3,7 +3,7 @@ package org.vaadin.addons.maplibre;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.VelocityContext;
@@ -12,7 +12,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.vaadin.addons.velocitycomponent.AbstractVelocityJsComponent;
 
 import java.io.IOException;
@@ -26,8 +25,6 @@ import java.util.UUID;
 /**
  * A Java/Vaadin API for MapLibre GL JS.
  */
-@JavaScript("https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js")
-@StyleSheet("https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css")
 @Tag("div")
 public class MapLibre extends AbstractVelocityJsComponent implements HasSize, HasStyle {
 
@@ -51,6 +48,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     }
 
     private void init(String styleJson, String styleUrl) {
+        loadMapLibreJs();
         setId("map");
         setWidth("800px");
         setHeight("500px");
@@ -60,6 +58,24 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 "styleUrl", styleUrl == null ? "null" : styleUrl
         ));
     }
+
+    /**
+     * Loads the MapLibre JS library to the host page.
+     * Not using @JavaScript annotation, as not all users
+     * necessarily want to use the unpkg.com CDN.
+     *
+     * <p>Override if you want for example
+     * to load it from a local file instead of from unpkg.com.</p>
+     */
+    protected void loadMapLibreJs() {
+        UI ui = getUI().orElse(UI.getCurrent());
+        boolean loaded = ui.getElement().getProperty("maplibre-loaded", false);
+        if(!loaded) {
+            final String version = "3.2.2";
+            ui.getPage().addJavaScript("https://unpkg.com/maplibre-gl@v%s/dist/maplibre-gl.js".formatted(version));
+            ui.getPage().addStyleSheet("https://unpkg.com/maplibre-gl@v%s/dist/maplibre-gl.css".formatted(version));
+            ui.getElement().setProperty("maplibre-loaded", true);
+        }
     }
 
     public Integer getZoomLevel() {
