@@ -1,5 +1,6 @@
 package org.vaadin.addons.maplibre;
 
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
@@ -20,6 +21,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -244,5 +246,22 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public void flyTo(Geometry geometry, int i) {
         Point centroid = geometry.getCentroid();
         flyTo(centroid.getX(), centroid.getY(), i);
+    }
+
+    private HashMap<String, Runnable> jsCallbacks = new HashMap<>();
+
+    String registerJsCallback(Runnable r) {
+        String id = UUID.randomUUID().toString();
+        jsCallbacks.put(id, r);
+        return id;
+    }
+
+    void deregisterJsCallback(String id) {
+        jsCallbacks.remove(id);
+    }
+
+    @ClientCallable
+    private void jsCallback(String cbId) {
+        jsCallbacks.get(cbId).run();
     }
 }

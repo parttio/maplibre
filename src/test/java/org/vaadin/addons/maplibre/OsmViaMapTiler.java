@@ -1,9 +1,11 @@
 package org.vaadin.addons.maplibre;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
@@ -48,6 +50,7 @@ public class OsmViaMapTiler extends VerticalLayout {
                 }
                 map.fitTo(g, 0.01);
             });
+
             Button seeWorld = new Button("See the world (flyTo(0,0,0)");
             seeWorld.addClickListener(e -> {
                 map.flyTo(0,0,0);
@@ -56,6 +59,13 @@ public class OsmViaMapTiler extends VerticalLayout {
             plotYourself.addClickListener(e -> {
                 Geolocation.getCurrentPosition(position -> {
                     yourPosition = map.addMarker(position.getCoords().getLongitude(), position.getCoords().getLatitude());
+                    yourPosition.addClickListener(() -> {
+                        Notification.show("That's you! Location: %s, %s, accuracy: %s"
+                                .formatted(
+                                        position.getCoords().getLongitude(),
+                                        position.getCoords().getLatitude(),
+                                        position.getCoords().getAccuracy()));
+                    });
                     map.flyTo(yourPosition.getGeometry(), 13);
                 }, error -> {
                     System.out.println("Error: ");
