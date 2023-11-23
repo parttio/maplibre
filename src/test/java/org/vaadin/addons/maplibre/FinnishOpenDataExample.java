@@ -38,6 +38,9 @@ public class FinnishOpenDataExample extends VerticalLayout {
 
             // use OSM tiles via maptiler.com as base layer
             super(new URI("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU"));
+            // This could be used as well:
+            //https://avoin-karttakuva.maanmittauslaitos.fi/vectortiles/stylejson/v20/hobby.json?api-key=95065def-f53b-44d6-b429-769c3d504e13
+
             setCenter(22.2462, 60.1755);
             setZoomLevel(15);
 
