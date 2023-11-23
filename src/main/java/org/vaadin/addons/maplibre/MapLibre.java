@@ -49,7 +49,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     }
 
     private void init(String styleJson, String styleUrl) {
-        JSLoader.loadUnpkg(this, "maplibre-gl","3.2.2", "dist/maplibre-gl.js","dist/maplibre-gl.css");
+        loadMapLibreJs();
         setId("map");
         setWidth("800px");
         setHeight("500px");
@@ -60,7 +60,17 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         ));
     }
 
-
+    /**
+     * Loads the MapLibre JS library to the host page.
+     * Not using @JavaScript annotation, as not all users
+     * necessarily want to use the unpkg.com CDN.
+     *
+     * <p>Override if you want for example
+     * to load it from a local file instead of from unpkg.com.</p>
+     */
+    protected void loadMapLibreJs() {
+        JSLoader.loadUnpkg(this, "maplibre-gl","3.2.2", "dist/maplibre-gl.js","dist/maplibre-gl.css");
+    }
 
     public Integer getZoomLevel() {
         return 15;
