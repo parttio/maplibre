@@ -4,8 +4,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.VelocityContext;
 import org.locationtech.jts.geom.Coordinate;
@@ -32,7 +31,7 @@ import java.util.UUID;
 public class MapLibre extends AbstractVelocityJsComponent implements HasSize, HasStyle {
 
     private Coordinate center = new Coordinate(0, 0);
-    private int zoomLevel = 15;
+    private int zoomLevel = 0;
 
     public MapLibre(URI styleUrl) {
         init(null, styleUrl.toString());
@@ -71,11 +70,11 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
      * to load it from a local file instead of from unpkg.com.</p>
      */
     protected void loadMapLibreJs() {
-        JSLoader.loadUnpkg(this, "maplibre-gl","3.2.2", "dist/maplibre-gl.js","dist/maplibre-gl.css");
+        JSLoader.loadUnpkg(this, "maplibre-gl","latest", "dist/maplibre-gl.js","dist/maplibre-gl.css");
     }
 
     public Integer getZoomLevel() {
-        return 15;
+        return zoomLevel;
     }
 
     public Coordinate getCenter() {
@@ -222,10 +221,12 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     /**
      * Executes given JS in the context of the map component,
      * either right away, or right after initial loading is done.
+     *
      * @param js the JS to execute, map and component variables are initialized automatically.
+     * @return
      */
-    protected void js(String js, Map<String, Object> variables) {
-        velocityJs("""
+    protected PendingJavaScriptResult js(String js, Map<String, Object> variables) {
+        return velocityJs("""
             const map = this.map;
             const component = this;
             const action = () => {
@@ -234,7 +235,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
             if(!this.styleloaded) {
                 map.on('load', action);
             } else {
-                action();
+                return action();
             }
         """.formatted(js), variables);
     }

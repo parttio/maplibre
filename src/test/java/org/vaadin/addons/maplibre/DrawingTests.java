@@ -1,6 +1,8 @@
 package org.vaadin.addons.maplibre;
 
 import com.vaadin.flow.component.ClientCallable;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -8,75 +10,135 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.vaadin.firitin.components.RichText;
+import org.vaadin.firitin.components.button.VButton;
+import org.vaadin.firitin.components.orderedlayout.VHorizontalLayout;
+import org.vaadin.firitin.components.orderedlayout.VVerticalLayout;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Route
-@JavaScript("https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.2/mapbox-gl-draw.js")
+@JavaScript("https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.js")
 //@StyleSheet("https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.2/mapbox-gl-draw.css")
-public class DrawingTests extends VerticalLayout {
+public class DrawingTests extends VVerticalLayout {
+    private final MapLibre map;
+
     public DrawingTests() {
         add(new RichText().withMarkDown("""
-        # Basic Map
-        
-        "Hello world" using MapLibre's demo style declaration.
-        
-        """));
+                # Drawing geometries with mapbox-gl-draw
+                        
+                Although MapLibre was forked quite a quile ago, the
+                mapbox-gl-draw plugin seems to be fairly compatible still.      
+                """));
         try {
-            MapLibre map = new MapLibre(new URI("https://demotiles.maplibre.org/style.json"));
-            map.setHeight("400px");
-            map.setWidth("100%");
-            add(map);
+            map = new MapLibre(new URI("https://demotiles.maplibre.org/style.json"));
+            map.setWidthFull();
+            withExpanded(map);
 
-            add(new Button("Draw polygon", e-> {
-                map.getElement().getStyle().setCursor("crosshair");
-                map.js("""
-                        // Velocity template magic :-)
-                        #set ( $dollar = "$")
-                                        
-                        const draw = new MapboxDraw({
-                            displayControlsDefault: false,
-                            controls: {},
-                            defaultMode: 'draw_polygon'
+            add(new VHorizontalLayout(
+                    new VButton("Draw polygon (CTRL-P)", e -> {
+                        drawPolygon().thenAccept(polygon -> {
+                            map.addFillLayer(polygon, new FillPaint("red", 0.3));
                         });
-                        
-                        map.addControl(draw);
-                        // TODO figure out a good way to do this
-                        map._canvasContainer.style.cursor ="crosshair";
-                        
-                        map.on('draw.create', updateArea);
-                                
-                        function updateArea(e) {
-                            const data = draw.getAll();
-                            $drawingTest.${dollar}server.updateArea(JSON.stringify(data));
-                            map.removeControl(draw); // this still throws an exception, but looks good (drawn feature is removed).
-                        }          
-                        
-                    """, Map.of("drawingTest", getElement()));
-            }));
-
+                    }).withClickShortcut(Key.KEY_P, KeyModifier.CONTROL),
+                    new VButton("Draw linestring (CTRL-L)", e -> {
+                        drawLineString().thenAccept(geom -> {
+                            map.addLineLayer(geom, new LinePaint("blue", 1.0));
+                        });
+                    }).withClickShortcut(Key.KEY_L, KeyModifier.CONTROL))
+            );
 
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
 
-    @ClientCallable
-    public void updateArea(String data) {
-        System.out.println(data);
+    public CompletableFuture<Polygon> drawPolygon() {
+        var f = new CompletableFuture<Polygon>();
+        map.js("""
+                    // Velocity template magic :-)
+                    #set ( $dollar = "$")
+                    
+                    if(!this.draw) {
+                        this.draw = new MapboxDraw({
+                            displayControlsDefault: false,
+                            controls: {}
+                        });
+                        map.addControl(this.draw);
+                    }
+                    this.draw.changeMode("draw_polygon");
+                    // TODO figure out a good way to do this
+                    map._canvasContainer.style.cursor ="crosshair";
+                    
+                    return new Promise(resolveGeometry => {
+                        map.once('draw.create', () => {
+                            const data = this.draw.getAll();
+                            const geoJsonToServer = JSON.stringify(data);
+                            this.draw.trash();
+                            map._canvasContainer.style.cursor = "";
+                            resolveGeometry(geoJsonToServer);
+                        });
+                    });
 
-        try {
-            Geometry geometry = new GeoJsonReader().read(data);
-            Notification.show("Area: " + geometry.toText());
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+                """, Collections.emptyMap()).then(String.class, geojson -> {
+            try {
+                GeometryCollection collection
+                        = (GeometryCollection) new GeoJsonReader().read(geojson);
+                Polygon polygon = (Polygon) collection.getGeometryN(0);
+                f.complete(polygon);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return f;
+    }
 
+    public CompletableFuture<LineString> drawLineString() {
+        var f = new CompletableFuture<LineString>();
+        map.js("""
+                    // Velocity template magic :-)
+                    #set ( $dollar = "$")
+                    
+                    if(!this.draw) {
+                        this.draw = new MapboxDraw({
+                            displayControlsDefault: false,
+                            controls: {}
+                        });
+                        map.addControl(this.draw);
+                    }
+                    this.draw.changeMode("draw_line_string");
+                    // TODO figure out a good way to do this
+                    map._canvasContainer.style.cursor ="crosshair";
+                    
+                    return new Promise(resolveGeometry => {
+                        map.once('draw.create', () => {
+                            const data = this.draw.getAll();
+                            const geoJsonToServer = JSON.stringify(data);
+                            this.draw.trash();
+                            map._canvasContainer.style.cursor = "";
+                            resolveGeometry(geoJsonToServer);
+                        });
+                    });
 
+                """, Collections.emptyMap()).then(String.class, geojson -> {
+            try {
+                GeometryCollection collection
+                        = (GeometryCollection) new GeoJsonReader().read(geojson);
+                LineString geom = (LineString) collection.getGeometryN(0);
+                f.complete(geom);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return f;
     }
 }

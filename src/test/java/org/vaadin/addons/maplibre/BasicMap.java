@@ -2,7 +2,6 @@ package org.vaadin.addons.maplibre;
 
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import org.vaadin.firitin.components.RichText;
 
 import java.net.URI;

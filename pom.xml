@@ -10,7 +10,7 @@
     <url>https://github.com/parttio/maplibre</url>
 
     <properties>
-        <vaadin.version>24.1.4</vaadin.version>
+        <vaadin.version>24.3.5</vaadin.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -91,7 +91,7 @@
         <dependency>
             <groupId>in.virit</groupId>
             <artifactId>viritin</artifactId>
-            <version>2.1.0</version>
+            <version>2.7.3-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -148,7 +148,7 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>11.0.14</version>
+                <version>11.0.15</version>
                 <configuration>
                     <scan>-1</scan>
                     <!-- Use test scope because the UI/test classes are in
@@ -264,7 +264,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>3.0.0</version>
+                        <version>3.1.2</version>
                         <executions>
                             <execution>
                                 <goals>
