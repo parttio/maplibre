@@ -12,6 +12,7 @@ public class Layer {
         this.map = map;
         this.id = id;
         this.geometry = geometry;
+        map.registerLayer(id, this);
     }
 
     public void remove() {

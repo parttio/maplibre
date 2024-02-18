@@ -1,10 +1,12 @@
 package org.vaadin.addons.maplibre;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.DomEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.VelocityContext;
 import org.locationtech.jts.geom.Coordinate;
@@ -19,8 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -32,6 +36,8 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     private Coordinate center = new Coordinate(0, 0);
     private int zoomLevel = 0;
+
+    private final HashMap<String,Layer> idToLayer = new HashMap<>();
 
     public MapLibre(URI styleUrl) {
         init(null, styleUrl.toString());
@@ -149,7 +155,8 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
               'paint': $paint
             });
         """, Map.of("name", name, "source", source, "sourceLayer", sourceLayer, "paint", paint));
-        return new Layer(this, name, geom);
+
+         return new Layer(this, name, geom);
     }
 
     public void removeLayer(Layer layer) {
@@ -163,6 +170,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 map.removeSource('$id');
             """, Map.of("id", layer.id));
         }
+        idToLayer.remove(layer.id);
     }
 
     public void addSource(String name, String sourceDeclarationJson) {
@@ -265,4 +273,87 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     private void jsCallback(String cbId) {
         jsCallbacks.get(cbId).run();
     }
+
+    void registerLayer(String id, Layer layer) {
+        idToLayer.put(id, layer);
+    }
+
+
+    public class MapClickEvent {
+        private final Layer layer;
+        private final Coordinate point;
+        private final Coordinate pixelCoordinate;
+
+        public Coordinate getPoint() {
+            return point;
+        }
+
+        record LngLatRecord(double lng, double lat) {}
+        record PointRecord(double x, double y) {}
+
+        public MapClickEvent(DomEvent domEvent) {
+            String fId = domEvent.getEventData().getString("event.featureId");
+            this.layer = idToLayer.get(fId);
+            try {
+                LngLatRecord ll = AbstractKebabCasedDto.mapper.readValue(
+                        domEvent.getEventData().getString("event.lngLat"), LngLatRecord.class);
+                PointRecord p = AbstractKebabCasedDto.mapper.readValue(
+                        domEvent.getEventData().getString("event.point"), PointRecord.class);
+                this.point = new Coordinate(ll.lng, ll.lat);
+                this.pixelCoordinate = new Coordinate(p.x,p.y);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Layer getLayer() {
+            return layer;
+        }
+    }
+    public interface MapClickListener {
+
+        public void onClick(MapClickEvent event);
+
+    }
+
+    private List<MapClickListener> mapClickListeners;
+
+    public void addMapClickListener(MapClickListener listener) {
+        if(mapClickListeners == null) {
+            mapClickListeners = new ArrayList<>();
+
+            js("""
+            map.on("click", e => {
+                var evt = new Event("map-click");
+                const features = map.queryRenderedFeatures(e.point)
+                if(features[0]) {
+                    evt.featureId = features[0].layer.id;
+                }
+                evt.lngLat = JSON.stringify(e.lngLat);
+                evt.point = JSON.stringify(e.point);
+                component.dispatchEvent(evt);
+            });
+            
+            """);
+
+            getElement().addEventListener("map-click", domEvent -> {
+                    MapClickEvent mapClickEvent = new MapClickEvent(domEvent);
+                    for (MapClickListener l : mapClickListeners) {
+                        l.onClick(mapClickEvent);
+                    }
+                }).addEventData("event.lngLat")
+                .addEventData("event.point")
+                .addEventData("event.featureId");
+
+        }
+        mapClickListeners.add(listener);
+
+    }
+
+    @ClientCallable
+    private void _fireClick() {
+
+    }
+
+
 }

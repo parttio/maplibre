@@ -5,16 +5,13 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.vaadin.firitin.components.RichText;
 import org.vaadin.firitin.geolocation.Geolocation;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 @Route
 public class OsmViaMapTiler extends VerticalLayout {
@@ -23,10 +20,10 @@ public class OsmViaMapTiler extends VerticalLayout {
     public OsmViaMapTiler() {
         add(new RichText().withMarkDown("""
                 # OpenStreetMap via MapTiler
-                
+                                
                 This example contains a simple vector basemap with a marker at Vaadin HQ and a random polygon plotted around it.
                 Some action buttons to show basic API of the component.
-                
+                                
                 """));
         try {
             MapLibre map = new MapLibre(new URI("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU"));
@@ -40,12 +37,22 @@ public class OsmViaMapTiler extends VerticalLayout {
 
             map.setCenter(22.300, 60.452);
             map.setZoomLevel(13);
+
+            map.addMapClickListener(e -> {
+                String str = "Clicked on Map: " + e.getPoint().toString();
+                if (e.getLayer() != null) {
+                    str += " Layer : " + e.getLayer().getGeometry().toText();
+                }
+                Notification.show(str);
+            });
+
+
             add(map);
 
             Button b = new Button("Zoom to content");
             b.addClickListener(e -> {
                 Geometry g = polygon;
-                if(yourPosition != null) {
+                if (yourPosition != null) {
                     g = g.union(yourPosition.getGeometry());
                 }
                 map.fitTo(g, 0.01);
@@ -53,7 +60,7 @@ public class OsmViaMapTiler extends VerticalLayout {
 
             Button seeWorld = new Button("See the world (flyTo(0,0,0)");
             seeWorld.addClickListener(e -> {
-                map.flyTo(0,0,0);
+                map.flyTo(0, 0, 0);
             });
             Button plotYourself = new Button("Plot yourself");
             plotYourself.addClickListener(e -> {
