@@ -80,7 +80,8 @@ public class MopoSmokeIT {
 
         page.getByLabel("Map marker").last().click();
 
-        assertThat(page.locator("vaadin-notification-card")).containsText("That's you!");
+        assertThat(page.locator("vaadin-notification-card").first())
+                .containsText("That's you!");
 
     }
 
