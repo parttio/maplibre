@@ -1,15 +1,9 @@
 package org.vaadin.addons.maplibre;
 
-import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
@@ -23,16 +17,15 @@ import org.vaadin.firitin.components.orderedlayout.VVerticalLayout;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Route
 @JavaScript("https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.js")
 //@StyleSheet("https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.2/mapbox-gl-draw.css")
-public class DrawingTests extends VVerticalLayout {
+public class RawDrawingTests extends VVerticalLayout {
     private final MapLibre map;
 
-    public DrawingTests() {
+    public RawDrawingTests() {
         add(new RichText().withMarkDown("""
                 # Drawing geometries with mapbox-gl-draw
                         
