@@ -2,6 +2,7 @@ package org.vaadin.addons.maplibre;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +23,13 @@ public class Marker extends Layer {
                 .setHTML('$html');
             marker.setPopup(popup);
         """, Map.of("id", id, "html", html));
+    }
+
+    public void setPoint(Point point) {
+        map.js("""
+            const marker = component.markers['$id'];
+            marker.setLngLat(new maplibregl.LngLat($x, $y));
+        """, Map.of("id", id, "x", point.getX(), "y", point.getY()));
     }
 
     public interface ClickListener {

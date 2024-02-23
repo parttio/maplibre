@@ -34,10 +34,11 @@ import java.util.UUID;
 @Tag("div")
 public class MapLibre extends AbstractVelocityJsComponent implements HasSize, HasStyle {
 
+    private final HashMap<String, Layer> idToLayer = new HashMap<>();
     private Coordinate center = new Coordinate(0, 0);
     private int zoomLevel = 0;
-
-    private final HashMap<String,Layer> idToLayer = new HashMap<>();
+    private HashMap<String, Runnable> jsCallbacks = new HashMap<>();
+    private List<MapClickListener> mapClickListeners;
 
     public MapLibre(URI styleUrl) {
         init(null, styleUrl.toString());
@@ -76,11 +77,16 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
      * to load it from a local file instead of from unpkg.com.</p>
      */
     protected void loadMapLibreJs() {
-        JSLoader.loadUnpkg(this, "maplibre-gl","latest", "dist/maplibre-gl.js","dist/maplibre-gl.css");
+        JSLoader.loadUnpkg(this, "maplibre-gl", "latest", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
     }
 
     public Integer getZoomLevel() {
         return zoomLevel;
+    }
+
+    public void setZoomLevel(int zoomLevel) {
+        this.zoomLevel = zoomLevel;
+        js("map.setZoom($this.zoomLevel);");
     }
 
     public Coordinate getCenter() {
@@ -98,11 +104,11 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     private void addSource(String name, Geometry geometry) {
         js("""
-            map.addSource('$name', {
-              'type': 'geojson',
-              'data': $GeoJsonHelper.toJs($geometry)
-            });
-        """, Map.of("name", name, "geometry", geometry));
+                    map.addSource('$name', {
+                      'type': 'geojson',
+                      'data': $GeoJsonHelper.toJs($geometry)
+                    });
+                """, Map.of("name", name, "geometry", geometry));
     }
 
     public Layer addLineLayer(Geometry geometry, LinePaint linePaint) {
@@ -118,75 +124,79 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     }
 
     protected Layer addFillLayer(String name, String source, String sourceLayer, FillPaint paintJson, Geometry geom) {
-        if(sourceLayer == null) {
+        if (sourceLayer == null) {
             sourceLayer = "";
         } else {
             sourceLayer = "'source-layer': '%s',".formatted(sourceLayer);
         }
         js("""
-            map.addLayer({
-              'id': '%s',
-              'type': 'fill',
-              'source': '%s',
-              %s
-              'layout': {},
-              'paint': %s
-            });
-        """.formatted(name, source, sourceLayer, paintJson), Collections.emptyMap());
+                    map.addLayer({
+                      'id': '%s',
+                      'type': 'fill',
+                      'source': '%s',
+                      %s
+                      'layout': {},
+                      'paint': %s
+                    });
+                """.formatted(name, source, sourceLayer, paintJson), Collections.emptyMap());
         return new Layer(this, name, geom);
     }
 
-     protected Layer addLineLayer(String name, String source, String sourceLayer, LinePaint paint, Geometry geom) {
-        if(sourceLayer == null) {
+    protected Layer addLineLayer(String name, String source, String sourceLayer, LinePaint paint, Geometry geom) {
+        if (sourceLayer == null) {
             sourceLayer = "";
         } else {
             sourceLayer = "'source-layer': '%s',".formatted(sourceLayer);
         }
         js("""
-            map.addLayer({
-              'id': '$name',
-              'type': 'line',
-              'source': '$source',
-               $sourceLayer
-              'layout': {
-                'line-join': 'round',
-                'line-cap': 'round'
-              },
-              'paint': $paint
-            });
-        """, Map.of("name", name, "source", source, "sourceLayer", sourceLayer, "paint", paint));
+                    map.addLayer({
+                      'id': '$name',
+                      'type': 'line',
+                      'source': '$source',
+                       $sourceLayer
+                      'layout': {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                      },
+                      'paint': $paint
+                    });
+                """, Map.of("name", name, "source", source, "sourceLayer", sourceLayer, "paint", paint));
 
-         return new Layer(this, name, geom);
+        return new Layer(this, name, geom);
     }
 
     public void removeLayer(Layer layer) {
         if (layer instanceof Marker m) {
             js("""
-                component.markers['$id'].remove();
-            """, Map.of("id", m.id));
+                        component.markers['$id'].remove();
+                    """, Map.of("id", m.id));
         } else {
             js("""
-                map.removeLayer('$id');
-                map.removeSource('$id');
-            """, Map.of("id", layer.id));
+                        map.removeLayer('$id');
+                        map.removeSource('$id');
+                    """, Map.of("id", layer.id));
         }
         idToLayer.remove(layer.id);
     }
 
     public void addSource(String name, String sourceDeclarationJson) {
         js("""
-            map.addSource('$name', $sourceDeclarationJson);
-        """, Map.of("name", name, "sourceDeclarationJson", sourceDeclarationJson));
+                    map.addSource('$name', $sourceDeclarationJson);
+                """, Map.of("name", name, "sourceDeclarationJson", sourceDeclarationJson));
+    }
+
+    public Marker addMarker(Point point) {
+        return addMarker(point.getX(), point.getY());
     }
 
     public Marker addMarker(double x, double y) {
         String id = UUID.randomUUID().toString();
         js("""
-            component.markers = component.markers || {};
-            component.markers['$id'] = new maplibregl.Marker()
-                    .setLngLat([$x, $y])
-                    .addTo(map);
-        """, Map.of("id", id, "x", x, "y", y));
+                    component.markers = component.markers || {};
+                    component.markers['$id'] = new maplibregl.Marker()
+                            .setLngLat([$x, $y])
+                            .addTo(map);
+                """, Map.of("id", id, "x", x, "y", y));
         return new Marker(this, id, new Coordinate(x, y));
     }
 
@@ -202,28 +212,23 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         js("map.setCenter($GeoJsonHelper.toJs($this.center));");
     }
 
-    public void setZoomLevel(int zoomLevel) {
-        this.zoomLevel = zoomLevel;
-        js("map.setZoom($this.zoomLevel);");
-    }
-
     public void fitTo(Geometry geom, double padding) {
         Envelope envelope = geom.getEnvelopeInternal();
         envelope.expandBy(padding);
         js("""
-            const bounds = new maplibregl.LngLatBounds(
-            [%s, %s], [%s, %s]);;
-            map.fitBounds(bounds);
-        """.formatted(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY()));
+                    const bounds = new maplibregl.LngLatBounds(
+                    [%s, %s], [%s, %s]);;
+                    map.fitBounds(bounds);
+                """.formatted(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY()));
     }
 
     public void flyTo(double x, double y, double zoom) {
         js("""
-            map.flyTo({
-                center: [%s, %s],
-                zoom: %s
-            });
-        """.formatted(x, y, zoom));
+                    map.flyTo({
+                        center: [%s, %s],
+                        zoom: %s
+                    });
+                """.formatted(x, y, zoom));
     }
 
     /**
@@ -235,17 +240,17 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
      */
     protected PendingJavaScriptResult js(String js, Map<String, Object> variables) {
         return velocityJs("""
-            const map = this.map;
-            const component = this;
-            const action = () => {
-                %s
-            };
-            if(!this.styleloaded) {
-                map.on('load', action);
-            } else {
-                return action();
-            }
-        """.formatted(js), variables);
+                    const map = this.map;
+                    const component = this;
+                    const action = () => {
+                        %s
+                    };
+                    if(!this.styleloaded) {
+                        map.on('load', action);
+                    } else {
+                        return action();
+                    }
+                """.formatted(js), variables);
     }
 
     protected void js(String js) {
@@ -256,8 +261,6 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         Point centroid = geometry.getCentroid();
         flyTo(centroid.getX(), centroid.getY(), i);
     }
-
-    private HashMap<String, Runnable> jsCallbacks = new HashMap<>();
 
     String registerJsCallback(Runnable r) {
         String id = UUID.randomUUID().toString();
@@ -278,18 +281,53 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         idToLayer.put(id, layer);
     }
 
+    public void addMapClickListener(MapClickListener listener) {
+        if (mapClickListeners == null) {
+            mapClickListeners = new ArrayList<>();
+
+            js("""
+                    map.on("click", e => {
+                        var evt = new Event("map-click");
+                        const features = map.queryRenderedFeatures(e.point)
+                        if(features[0]) {
+                            evt.featureId = features[0].layer.id;
+                        }
+                        evt.lngLat = JSON.stringify(e.lngLat);
+                        evt.point = JSON.stringify(e.point);
+                        component.dispatchEvent(evt);
+                    });
+                                
+                    """);
+
+            getElement().addEventListener("map-click", domEvent -> {
+                        MapClickEvent mapClickEvent = new MapClickEvent(domEvent);
+                        for (MapClickListener l : mapClickListeners) {
+                            l.onClick(mapClickEvent);
+                        }
+                    }).addEventData("event.lngLat")
+                    .addEventData("event.point")
+                    .addEventData("event.featureId");
+
+        }
+        mapClickListeners.add(listener);
+
+    }
+
+    @ClientCallable
+    private void _fireClick() {
+
+    }
+
+    public interface MapClickListener {
+
+        public void onClick(MapClickEvent event);
+
+    }
 
     public class MapClickEvent {
         private final Layer layer;
         private final Coordinate point;
         private final Coordinate pixelCoordinate;
-
-        public Coordinate getPoint() {
-            return point;
-        }
-
-        record LngLatRecord(double lng, double lat) {}
-        record PointRecord(double x, double y) {}
 
         public MapClickEvent(DomEvent domEvent) {
             String fId = domEvent.getEventData().getString("event.featureId");
@@ -300,59 +338,25 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 PointRecord p = AbstractKebabCasedDto.mapper.readValue(
                         domEvent.getEventData().getString("event.point"), PointRecord.class);
                 this.point = new Coordinate(ll.lng, ll.lat);
-                this.pixelCoordinate = new Coordinate(p.x,p.y);
+                this.pixelCoordinate = new Coordinate(p.x, p.y);
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
         }
 
+        public Coordinate getPoint() {
+            return point;
+        }
+
         public Layer getLayer() {
             return layer;
         }
-    }
-    public interface MapClickListener {
 
-        public void onClick(MapClickEvent event);
-
-    }
-
-    private List<MapClickListener> mapClickListeners;
-
-    public void addMapClickListener(MapClickListener listener) {
-        if(mapClickListeners == null) {
-            mapClickListeners = new ArrayList<>();
-
-            js("""
-            map.on("click", e => {
-                var evt = new Event("map-click");
-                const features = map.queryRenderedFeatures(e.point)
-                if(features[0]) {
-                    evt.featureId = features[0].layer.id;
-                }
-                evt.lngLat = JSON.stringify(e.lngLat);
-                evt.point = JSON.stringify(e.point);
-                component.dispatchEvent(evt);
-            });
-            
-            """);
-
-            getElement().addEventListener("map-click", domEvent -> {
-                    MapClickEvent mapClickEvent = new MapClickEvent(domEvent);
-                    for (MapClickListener l : mapClickListeners) {
-                        l.onClick(mapClickEvent);
-                    }
-                }).addEventData("event.lngLat")
-                .addEventData("event.point")
-                .addEventData("event.featureId");
-
+        record LngLatRecord(double lng, double lat) {
         }
-        mapClickListeners.add(listener);
 
-    }
-
-    @ClientCallable
-    private void _fireClick() {
-
+        record PointRecord(double x, double y) {
+        }
     }
 
 
