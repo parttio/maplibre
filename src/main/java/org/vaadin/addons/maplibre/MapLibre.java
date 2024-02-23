@@ -56,7 +56,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         }
     }
 
-    private void init(String styleJson, String styleUrl) {
+    protected void init(String styleJson, String styleUrl) {
         loadMapLibreJs();
         setId("map");
         setWidth("800px");

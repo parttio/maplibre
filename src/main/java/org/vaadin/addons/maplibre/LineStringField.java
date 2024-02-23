@@ -6,25 +6,25 @@ import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 
-/**
- * TODO this was essentially copypasted from Polygonfield
- * extract common superclass.
- *
- */
-public class LineStringField extends CustomField<LineString> {
-    final MapLibre map;
-    private final DrawControl drawControl;
+public class LineStringField extends AbstractFeatureField<LineString> {
     private LineString lineString;
 
-    public LineStringField(String styleUrl) {
-        this.map = new MapLibre(styleUrl);
-        this.drawControl = new DrawControl(map);
+    public LineStringField() {
+    }
+
+    public LineStringField(String label) {
+        super(label);
+    }
+
+    @Override
+    public LineStringField withStyleUrl(String styleUrl) {
+        super.withStyleUrl(styleUrl);
         this.drawControl.addGeometryChangeListener(e -> {
             GeometryCollection geom = e.getGeom();
             lineString = (LineString) geom.getGeometryN(0);
             updateValue();
         });
-        add(map);
+        return this;
     }
 
     @Override

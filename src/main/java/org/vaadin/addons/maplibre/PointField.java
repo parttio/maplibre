@@ -9,23 +9,15 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
 public class PointField extends CustomField<Point> {
-    final MapLibre map;
+    MapLibre map;
     private Point point;
     private Marker marker;
 
-    public PointField(String styleUrl) {
-        this.map = new MapLibre(styleUrl);
-        map.addMapClickListener(event -> {
-            Coordinate coordinate = event.getPoint();
-            point = new GeometryFactory().createPoint(coordinate);
-            if(marker == null) {
-                marker = map.addMarker(point);
-            } else  {
-                marker.setPoint(point);
-            }
-            updateValue();
-        });
-        add(map);
+    public PointField(String label) {
+        setLabel(label);
+    }
+
+    public PointField() {
     }
 
     @Override
@@ -66,5 +58,21 @@ public class PointField extends CustomField<Point> {
                 marker.setPoint(point);
             }
         }
+    }
+
+    public PointField withStyleUrl(String styleUrl) {
+        this.map = new MapLibre(styleUrl);
+        map.addMapClickListener(event -> {
+            Coordinate coordinate = event.getPoint();
+            point = new GeometryFactory().createPoint(coordinate);
+            if(marker == null) {
+                marker = map.addMarker(point);
+            } else  {
+                marker.setPoint(point);
+            }
+            updateValue();
+        });
+        add(map);
+        return this;
     }
 }
