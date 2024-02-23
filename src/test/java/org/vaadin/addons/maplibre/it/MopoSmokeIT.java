@@ -6,24 +6,28 @@ import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import in.virit.mopo.Mopo;
+import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.util.Arrays;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class MopoSmokeIT {
 
-    private final int port = 8080;
+    @LocalServerPort
+    private int port;
 
-    private final String rootUrl = "http://localhost:" + port + "/";
+    private String rootUrl;
 
     static Playwright playwright = Playwright.create();
 
-    static {
-    }
 
     private Browser browser;
     private Page page;
@@ -32,6 +36,11 @@ public class MopoSmokeIT {
     // fake location for Playwright, close enough so animation is shorter :-)
     double lat = 60.452;
     double lon = 22.290;
+
+    @PostConstruct
+    public void init() {
+        rootUrl = "http://localhost:" + port + "/";
+    }
 
     @BeforeEach
     public void setup() {
