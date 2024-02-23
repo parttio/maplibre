@@ -32,6 +32,34 @@ public class Marker extends Layer {
         """, Map.of("id", id, "x", point.getX(), "y", point.getY()));
     }
 
+
+    public interface DragEndListener {
+        void dragEnd(Coordinate coordinate);
+    }
+
+
+    public Marker addDragEndListener(DragEndListener listener) {
+        map.js("""
+            const marker = component.markers['$id'];
+            marker.on('dragend', e => {
+                const lngLat = marker.getLngLat();
+                const evt = new Event("de-$id");
+                evt.lat = lngLat.lat;
+                evt.lng = lngLat.lng;
+                component.dispatchEvent(evt);
+            });
+            marker.setDraggable(true);
+        """, Map.of("id", id));
+        map.getElement().addEventListener("de-" + id, e -> {
+            double lat = e.getEventData().getNumber("event.lat");
+            double lng = e.getEventData().getNumber("event.lng");
+                    Coordinate coordinate = new Coordinate(lng, lat);
+                    listener.dragEnd(coordinate);
+        }).addEventData("event.lat")
+                .addEventData("event.lng");
+        return this;
+    }
+
     public interface ClickListener {
 
         void onClick();

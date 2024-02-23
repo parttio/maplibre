@@ -8,7 +8,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
-public class PointField extends CustomField<Point> {
+public class PointField extends CustomField<Point> implements Marker.DragEndListener {
     MapLibre map;
     private Point point;
     private Marker marker;
@@ -51,12 +51,13 @@ public class PointField extends CustomField<Point> {
             // Click will insert marker
         } else {
             // edit existing
-
             if(marker == null) {
-                marker = map.addMarker(point);
+                marker = map.addMarker(point)
+                        .addDragEndListener(this);
             } else {
                 marker.setPoint(point);
             }
+            map.setCenter(point.getX(), point.getY());
         }
     }
 
@@ -64,9 +65,10 @@ public class PointField extends CustomField<Point> {
         this.map = new MapLibre(styleUrl);
         map.addMapClickListener(event -> {
             Coordinate coordinate = event.getPoint();
-            point = new GeometryFactory().createPoint(coordinate);
+            assingPointFromCoordinate(coordinate);
             if(marker == null) {
-                marker = map.addMarker(point);
+                marker = map.addMarker(point)
+                        .addDragEndListener(this);
             } else  {
                 marker.setPoint(point);
             }
@@ -74,5 +76,15 @@ public class PointField extends CustomField<Point> {
         });
         add(map);
         return this;
+    }
+
+    private void assingPointFromCoordinate(Coordinate coordinate) {
+        point = new GeometryFactory().createPoint(coordinate);
+    }
+
+    @Override
+    public void dragEnd(Coordinate coordinate) {
+        assingPointFromCoordinate(coordinate);
+        updateValue();
     }
 }

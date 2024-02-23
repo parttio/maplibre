@@ -9,6 +9,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
 import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -77,6 +78,7 @@ public class BinderCompatibleFields extends VVerticalLayout {
             WKTReader wktReader = new WKTReader();
             dto.setPolygon((Polygon) wktReader.read("POLYGON ((14.414062500000057 30.78316572944169, 11.953125000000199 17.610779566064465, 34.453125000000114 24.523876245928008, 14.414062500000057 30.78316572944169))"));
             dto.setLine((LineString) wktReader.read("LINESTRING (-19.3359374999998 34.307143856287084, -2.460937499999858 18.64624514267028, 16.17187500000071 -4.565473550710905, 30.585937500000796 -0.3515602939934723, 26.718750000000398 21.61657933674043, 11.249999999999972 31.052933985704698, 22.85156250000003 39.09596293630463)"));
+            dto.setPoint((Point) wktReader.read("POINT (22.432676442827614 60.218838054023394)"));
             binder.setBean(dto);
         } catch (ParseException e) {
             throw new RuntimeException(e);

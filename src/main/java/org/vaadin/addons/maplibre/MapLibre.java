@@ -14,6 +14,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.parttio.vaadinjsloader.JSLoader;
 import org.vaadin.addons.velocitycomponent.AbstractVelocityJsComponent;
 
@@ -316,6 +317,18 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     @ClientCallable
     private void _fireClick() {
 
+    }
+
+    public void fitBounds(Geometry geometry) {
+        String geojson = new GeoJsonWriter().write(geometry.getEnvelope().getBoundary());
+        js("""
+                const bbox = JSON.parse('$bbox');
+                const b = new maplibregl.LngLatBounds(bbox.coordinates[0],bbox.coordinates[1]);
+                bbox.coordinates.forEach(c => {
+                    b.extend([c[0],c[1]]);                    
+                });
+                map.fitBounds(b, {padding: 20});
+                """, Map.of("bbox", geojson));
     }
 
     public interface MapClickListener {

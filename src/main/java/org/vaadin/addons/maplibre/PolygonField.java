@@ -49,6 +49,7 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
             drawControl.setGeometry(polygon);
             drawControl.setMode(DrawControl.DrawMode.SIMPLE_SELECT);
             drawControl.directSelectFirst();
+            map.fitBounds(polygon);
         }
     }
 }

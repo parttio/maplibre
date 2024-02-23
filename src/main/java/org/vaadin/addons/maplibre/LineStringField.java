@@ -4,6 +4,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.customfield.CustomField;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
 public class LineStringField extends AbstractFeatureField<LineString> {
@@ -64,6 +65,7 @@ public class LineStringField extends AbstractFeatureField<LineString> {
             // edit existing
             drawControl.setGeometry(lineString);
             drawControl.directSelectFirst();
+            map.fitBounds(lineString);
         }
     }
 }
