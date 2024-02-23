@@ -23,7 +23,7 @@ public class BinderCompatibleFields extends VVerticalLayout {
 
     private static String basemapStyle = "https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU";
     private final Binder<Dto> binder;
-    private TextField name = new TextField("Name");
+    private TextField name = new TextField("Name (just as a reference)");
     private PolygonField polygon = new PolygonField(basemapStyle);
     private LineStringField line = new LineStringField(basemapStyle);
     private PointField point = new PointField(basemapStyle);
@@ -34,7 +34,7 @@ public class BinderCompatibleFields extends VVerticalLayout {
         configure(line, "Line");
         configure(point, "Point");
 
-        add(new H1("UI fiedlds for basic JTS geometry types"));
+        add(new H1("Binder compatible UI fields to edit basic JTS geometry types"));
         add(name);
         add(new HorizontalLayout(polygon, line, point));
 
