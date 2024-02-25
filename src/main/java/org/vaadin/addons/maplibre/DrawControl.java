@@ -156,6 +156,10 @@ public class DrawControl {
         return v;
     }
 
+    public void clear() {
+        js("draw.deleteAll()", Collections.emptyMap());
+    }
+
     public void setGeometry(Geometry geometry) {
         String geojsonstr = new GeoJsonWriter().write(geometry);
         js("""

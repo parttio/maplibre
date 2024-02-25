@@ -15,7 +15,7 @@ public class Marker extends Layer {
         super(map, id,new GeometryFactory().createPoint(coordinate));
     }
 
-    public void withPopup(String html) {
+    public Marker withPopup(String html) {
         map.js("""
             const marker = component.markers['$id'];
             const popup = new maplibregl.Popup({closeButton: true, closeOnClick: true})
@@ -23,6 +23,7 @@ public class Marker extends Layer {
                 .setHTML('$html');
             marker.setPopup(popup);
         """, Map.of("id", id, "html", html));
+        return this;
     }
 
     public void setPoint(Point point) {
@@ -32,6 +33,12 @@ public class Marker extends Layer {
         """, Map.of("id", id, "x", point.getX(), "y", point.getY()));
     }
 
+    public void openPopup() {
+        map.js("""
+            const marker = component.markers['$id'];
+            marker.getPopup().addTo(map);
+            """, Map.of("id", id));
+    }
 
     public interface DragEndListener {
         void dragEnd(Coordinate coordinate);

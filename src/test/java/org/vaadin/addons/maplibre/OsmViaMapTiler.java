@@ -30,14 +30,16 @@ public class OsmViaMapTiler extends VerticalLayout {
             MapLibre map = new MapLibre(new URI("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU"));
             map.setHeight("400px");
             map.setWidth("100%");
-            map.addMarker(22.300, 60.452).withPopup("Hello from Vaadin!");
+            map.addMarker(22.300, 60.452)
+                    .withPopup("Hello from Vaadin!")
+                    .openPopup();
+
 
             Polygon polygon = (Polygon) new WKTReader().read("POLYGON((22.290 60.428, 22.310 60.429, 22.31 60.47, 22.28 60.47, 22.290 60.428))");
 
             map.addFillLayer(polygon, new FillPaint("red", 0.2));
 
-            map.setCenter(22.300, 60.452);
-            map.setZoomLevel(13);
+            map.fitToContent();
 
             map.addMapClickListener(e -> {
                 String str = "Clicked on Map: " + e.getPoint().toString();
@@ -48,7 +50,8 @@ public class OsmViaMapTiler extends VerticalLayout {
             });
 
             map.addMoveEndListener(event -> {
-                Notification.show(event.toString()).setPosition(Notification.Position.TOP_END);
+                Notification notification = Notification.show(event.toString());
+                notification.setPosition(Notification.Position.TOP_END);
             });
 
             addAndExpand(map);
@@ -64,7 +67,7 @@ public class OsmViaMapTiler extends VerticalLayout {
 
             Button seeWorld = new Button("See the world (flyTo(0,0,0)");
             seeWorld.addClickListener(e -> {
-                map.flyTo(0, 0, 0);
+                map.flyTo(0, 0, 0.0);
             });
             Button plotYourself = new Button("Plot yourself");
             plotYourself.addClickListener(e -> {
@@ -85,7 +88,7 @@ public class OsmViaMapTiler extends VerticalLayout {
 
             Button showExtent = new VButton("Detect viewport", e-> {
                 map.getViewPort().thenAccept(vp -> {
-                    Notification.show(vp.toString(), 3000, Notification.Position.TOP_END);
+                    Notification.show(vp.toString() + vp.getBounds(), 3000, Notification.Position.TOP_END);
                 });
             });
 

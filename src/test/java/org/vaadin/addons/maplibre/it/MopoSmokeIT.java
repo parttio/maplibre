@@ -87,6 +87,15 @@ public class MopoSmokeIT {
 
         mopo.click(page.getByText("Plot yourself"));
 
+        // Wait for notifications to close
+        // TODO Vaadin should have API for it
+        // TODO Mopo should have API to wait for it
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         page.getByLabel("Map marker").last().click();
 
         assertThat(page.locator("vaadin-notification-card").first())

@@ -82,7 +82,7 @@ public class PointField extends CustomField<Point> implements Marker.DragEndList
     }
 
     private void assingPointFromCoordinate(Coordinate coordinate) {
-        point = new GeometryFactory().createPoint(coordinate);
+        point = MapLibre.gf.createPoint(coordinate);
     }
 
     @Override

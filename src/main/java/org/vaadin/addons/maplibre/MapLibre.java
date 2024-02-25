@@ -15,8 +15,10 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.parttio.vaadinjsloader.JSLoader;
 import org.vaadin.addons.velocitycomponent.AbstractVelocityJsComponent;
@@ -38,6 +40,8 @@ import java.util.concurrent.CompletableFuture;
  */
 @Tag("div")
 public class MapLibre extends AbstractVelocityJsComponent implements HasSize, HasStyle {
+
+    static GeometryFactory gf = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), 4326);
 
     private final HashMap<String, Layer> idToLayer = new HashMap<>();
     private ArrayList<MoveEndListener> moveEndListeners;
@@ -215,26 +219,44 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     }
 
     public void setCenter(double x, double y) {
-        this.center = new Coordinate(x, y);
+        setCenter(new Coordinate(x, y));
+    }
+
+    public void setCenter(Coordinate coordinate) {
+        this.center = coordinate;
         js("map.setCenter($GeoJsonHelper.toJs($this.center));");
+    }
+
+    public void setCenter(Geometry geom) {
+        setCenter(geom.getCentroid().getCoordinate());
     }
 
     public void fitTo(Geometry geom, double padding) {
         Envelope envelope = geom.getEnvelopeInternal();
-        envelope.expandBy(padding);
-        js("""
+        fitTo(envelope, padding);
+    }
+    protected void fitTo(Envelope envelope, double padding) {
+        fitTo("""
                     const bounds = new maplibregl.LngLatBounds(
                     [%s, %s], [%s, %s]);;
-                    map.fitBounds(bounds);
-                """.formatted(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY()));
+                    map.fitBounds(bounds, {padding: %s});
+                """.formatted(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY(), padding));
     }
 
-    public void flyTo(double x, double y, double zoom) {
+    private void fitTo(String envelope) {
+        js(envelope);
+    }
+
+    public void flyTo(double x, double y, Double zoom) {
         js("""
-                    map.flyTo({
-                        center: [%s, %s],
-                        zoom: %s
-                    });
+                    const opts = {
+                        center: [%s, %s]                    
+                    }
+                    const z = %s;
+                    if(z != null) {
+                        opts.zoom = z;                   
+                    }
+                    map.flyTo(opts);
                 """.formatted(x, y, zoom));
     }
 
@@ -264,9 +286,14 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         js(js, Collections.emptyMap());
     }
 
-    public void flyTo(Geometry geometry, int i) {
+    public void flyTo(Geometry geometry, double zoomLevel) {
         Point centroid = geometry.getCentroid();
-        flyTo(centroid.getX(), centroid.getY(), i);
+        flyTo(centroid.getX(), centroid.getY(), zoomLevel);
+    }
+
+    public void flyTo(Geometry geometry) {
+        Point centroid = geometry.getCentroid();
+        flyTo(centroid.getX(), centroid.getY(), null);
     }
 
     String registerJsCallback(Runnable r) {
@@ -367,6 +394,19 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         return res;
     }
 
+    public void fitToContent() {
+        List<Geometry> geometries = new ArrayList<>();
+        idToLayer.values().forEach(layer ->
+            geometries.add(layer.getGeometry()));
+        if(geometries.size() > 0) {
+            Envelope env = geometries.get(0).getEnvelopeInternal();
+            for(Geometry g : geometries) {
+                env.expandToInclude(g.getEnvelopeInternal());
+            }
+            fitTo(env, 20);
+        }
+    }
+
     public interface MoveEndListener {
         void onMove(MoveEndEvent event);
     }
@@ -379,8 +419,22 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     public record ViewPort(Point southWest, Point northEast, Point center, double bearing, double pitch) {
 
+
+        public Polygon getBounds() {
+            // 4326
+            // TODO this will most likely now not be perfect if bearing/pitch
+            // is used, would need some math...
+            Coordinate[] shell = new Coordinate[5];
+            shell[0] = southWest.getCoordinate();
+            shell[4] = southWest.getCoordinate();
+            shell[2] = northEast.getCoordinate();
+            shell[1] = new Coordinate(southWest.getX(), northEast.getY());
+            shell[3] = new Coordinate(northEast.getX(), southWest.getY());
+            return gf.createPolygon(shell);
+
+        }
+
         public static ViewPort of(JsonObject o) {
-            GeometryFactory gf = new GeometryFactory();
             var southWest = gf.createPoint(new Coordinate(
                     o.getObject("sw").getNumber("lng"),
                     o.getObject("sw").getNumber("lat")));
@@ -391,6 +445,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
             double clng = o.getObject("c").getNumber("lng");
             return new ViewPort(southWest, northEast, gf.createPoint(new Coordinate(clng, clat)), o.getNumber("bearing"), o.getNumber("pitch"));
         }
+
     }
 
     public class MoveEndEvent {
@@ -446,6 +501,11 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
         record PointRecord(double x, double y) {
         }
+    }
+
+    public void removeAll() {
+        ArrayList<Layer> layers = new ArrayList<>(this.idToLayer.values());
+        layers.forEach(l -> removeLayer(l));
     }
 
 }
