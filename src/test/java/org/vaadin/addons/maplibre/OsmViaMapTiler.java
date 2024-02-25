@@ -9,6 +9,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.WKTReader;
 import org.vaadin.firitin.components.RichText;
+import org.vaadin.firitin.components.button.VButton;
 import org.vaadin.firitin.geolocation.Geolocation;
 
 import java.net.URI;
@@ -81,7 +82,14 @@ public class OsmViaMapTiler extends VerticalLayout {
                     System.out.println("Error: ");
                 });
             });
-            add(new HorizontalLayout(b, seeWorld, plotYourself));
+
+            Button showExtent = new VButton("Detect viewport", e-> {
+                map.getViewPort().thenAccept(vp -> {
+                    Notification.show(vp.toString(), 3000, Notification.Position.TOP_END);
+                });
+            });
+
+            add(new HorizontalLayout(b, seeWorld, plotYourself, showExtent));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

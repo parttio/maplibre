@@ -40,7 +40,7 @@ public class BinderCompatibleFields extends VVerticalLayout {
 
         add(new H1("Binder compatible UI fields to edit basic JTS geometry types"));
         add(name);
-        add(new HorizontalLayout(polygon, line, point));
+        add(new VHorizontalLayout(polygon, line, point).withFullWidth());
 
         binder = new Binder<>(Dto.class);
         binder.bindInstanceFields(this);
@@ -65,7 +65,7 @@ public class BinderCompatibleFields extends VVerticalLayout {
 
     private void configure(CustomField f) {
         f.setHeight("300px");
-        f.setWidth("300px");
+        f.setWidthFull();
     }
 
     public void setDtoWithValues() {

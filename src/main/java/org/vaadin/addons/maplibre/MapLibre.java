@@ -7,6 +7,8 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.DomEvent;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.VelocityContext;
 import org.locationtech.jts.geom.Coordinate;
@@ -29,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A Java/Vaadin API for MapLibre GL JS.
@@ -92,19 +95,20 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         js("map.setZoom($this.zoomLevel);");
     }
 
+    /**
+     * Returns the defined center of this map.
+     * Note that user can most likely pan the map.
+     * Use getViewPort() method to detect the current value
+     * from the client side.
+     *
+     * @return the last set center of this map.
+     * @deprecated Might contain outdated value, consider using getViewPort()
+     */
+    @Deprecated
     public Coordinate getCenter() {
         return center;
     }
-
-    public String getMapStyle() {
-        try {
-            String s = IOUtils.resourceToString("/kiinteistojaotus-taustakartalla.json", Charset.defaultCharset());
-            return s;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+    
     private void addSource(String name, Geometry geometry) {
         js("""
                     map.addSource('$name', {
@@ -313,7 +317,6 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
         }
         mapClickListeners.add(listener);
-
     }
 
     public void fitBounds(Geometry geometry) {
@@ -331,19 +334,12 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public void addMoveEndListener(MoveEndListener listener) {
         if (moveEndListeners == null) {
             moveEndListeners = new ArrayList<>();
-
             js("""
                     map.on("moveend", e => {
                         var evt = new Event("map-moveend");
-                        const b = map.getBounds();
-                        evt.sw = b.getSouthWest();
-                        evt.ne = b.getNorthEast();
-                        evt.c = map.getCenter();
-                        evt.bearing = map.getBearing();
-                        evt.pitch = map.getPitch();
+                        evt.viewport = component.getViewPort();
                         component.dispatchEvent(evt);
                     });
-                                
                     """);
 
             getElement().addEventListener("map-moveend", domEvent -> {
@@ -352,20 +348,27 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                             l.onMove(event);
                         }
                     })
-                    .addEventData("event.c")
-                    .addEventData("event.bearing")
-                    .addEventData("event.pitch")
-                    .addEventData("event.sw")
-                    .addEventData("event.ne")
+                    .addEventData("event.viewport")
                     .debounce(150); // resizing may cause a ton of events, do a bit of debouncing
         }
         moveEndListeners.add(listener);
     }
 
+    /**
+     * Detects current view port details.
+     *
+     * @return viewport details
+     */
+    public CompletableFuture<ViewPort> getViewPort() {
+        var res = new CompletableFuture<ViewPort>();
+        getElement().callJsFunction("getViewPort")
+                .then(JsonObject.class,
+                        jso -> res.complete(ViewPort.of(jso)));
+        return res;
+    }
+
     public interface MoveEndListener {
-
-        public void onMove(MoveEndEvent event);
-
+        void onMove(MoveEndEvent event);
     }
 
     public interface MapClickListener {
@@ -374,57 +377,38 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     }
 
+    public record ViewPort(Point southWest, Point northEast, Point center, double bearing, double pitch) {
+
+        public static ViewPort of(JsonObject o) {
+            GeometryFactory gf = new GeometryFactory();
+            var southWest = gf.createPoint(new Coordinate(
+                    o.getObject("sw").getNumber("lng"),
+                    o.getObject("sw").getNumber("lat")));
+            double nelat = o.getObject("ne").getNumber("lat");
+            double nelng = o.getObject("ne").getNumber("lng");
+            var northEast = gf.createPoint(new Coordinate(nelng, nelat));
+            double clat = o.getObject("c").getNumber("lat");
+            double clng = o.getObject("c").getNumber("lng");
+            return new ViewPort(southWest, northEast, gf.createPoint(new Coordinate(clng, clat)), o.getNumber("bearing"), o.getNumber("pitch"));
+        }
+    }
+
     public class MoveEndEvent {
 
-        private final double bearing;
-        private final double pitch;
-        private final Point southWest;
-        private final Point northEast;
-        private final Point center;
+        ViewPort viewPort;
 
         public MoveEndEvent(DomEvent domEvent) {
-            GeometryFactory gf = new GeometryFactory();
-            double swlat = domEvent.getEventData().getObject("event.sw").getNumber("lat");
-            double swlng = domEvent.getEventData().getObject("event.sw").getNumber("lng");
-            this.southWest = gf.createPoint(new Coordinate(swlng, swlat));
-            double nelat = domEvent.getEventData().getObject("event.ne").getNumber("lat");
-            double nelng = domEvent.getEventData().getObject("event.ne").getNumber("lng");
-            this.northEast = gf.createPoint(new Coordinate(nelng, nelat));
-            double clat = domEvent.getEventData().getObject("event.c").getNumber("lat");
-            double clng = domEvent.getEventData().getObject("event.c").getNumber("lng");
-            this.center = gf.createPoint(new Coordinate(clng, clat));
-            this.bearing = domEvent.getEventData().getNumber("event.bearing");
-            this.pitch = domEvent.getEventData().getNumber("event.pitch");
+            this.viewPort = ViewPort.of(domEvent.getEventData().getObject("event.viewport"));
         }
 
-        public double getBearing() {
-            return bearing;
-        }
-
-        public double getPitch() {
-            return pitch;
-        }
-
-        public Point getCenter() {
-            return center;
-        }
-
-        public Point getNorthEast() {
-            return northEast;
-        }
-
-        public Point getSouthWest() {
-            return southWest;
+        public ViewPort getViewPort() {
+            return viewPort;
         }
 
         @Override
         public String toString() {
-            return "MoveEnd{" +
-                    "bearing=" + bearing +
-                    ", pitch=" + pitch +
-                    ", southWest=" + southWest +
-                    ", northEast=" + northEast +
-                    ", center=" + center +
+            return "MoveEndEvent{" +
+                    "viewPort=" + viewPort +
                     '}';
         }
     }
@@ -463,6 +447,5 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         record PointRecord(double x, double y) {
         }
     }
-
 
 }
