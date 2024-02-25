@@ -29,20 +29,6 @@ public class LineStringField extends AbstractFeatureField<LineString> {
     }
 
     @Override
-    public void setHeight(String height) {
-        super.setHeight(height);
-        // TODO fix relative sizes
-//        map.setHeightFull();
-        map.setHeight("280px");
-    }
-
-    @Override
-    public void setWidth(String width) {
-        super.setWidth(width);
-        map.setWidth(width);
-    }
-
-    @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         if(lineString == null) {

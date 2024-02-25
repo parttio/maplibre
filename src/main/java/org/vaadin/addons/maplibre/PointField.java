@@ -19,21 +19,7 @@ public class PointField extends CustomField<Point> implements Marker.DragEndList
 
     public PointField() {
     }
-
-    @Override
-    public void setHeight(String height) {
-        super.setHeight(height);
-        // TODO fix relative sizes
-//        map.setHeightFull();
-        map.setHeight("280px");
-    }
-
-    @Override
-    public void setWidth(String width) {
-        super.setWidth(width);
-        map.setWidth(width);
-    }
-
+    
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
