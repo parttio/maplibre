@@ -12,6 +12,7 @@ import org.apache.velocity.VelocityContext;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
@@ -36,6 +37,7 @@ import java.util.UUID;
 public class MapLibre extends AbstractVelocityJsComponent implements HasSize, HasStyle {
 
     private final HashMap<String, Layer> idToLayer = new HashMap<>();
+    private ArrayList<MoveEndListener> moveEndListeners;
     private Coordinate center = new Coordinate(0, 0);
     private int zoomLevel = 0;
     private HashMap<String, Runnable> jsCallbacks = new HashMap<>();
@@ -314,11 +316,6 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     }
 
-    @ClientCallable
-    private void _fireClick() {
-
-    }
-
     public void fitBounds(Geometry geometry) {
         String geojson = new GeoJsonWriter().write(geometry.getEnvelope().getBoundary());
         js("""
@@ -331,10 +328,105 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 """, Map.of("bbox", geojson));
     }
 
+    public void addMoveEndListener(MoveEndListener listener) {
+        if (moveEndListeners == null) {
+            moveEndListeners = new ArrayList<>();
+
+            js("""
+                    map.on("moveend", e => {
+                        var evt = new Event("map-moveend");
+                        const b = map.getBounds();
+                        evt.sw = b.getSouthWest();
+                        evt.ne = b.getNorthEast();
+                        evt.c = map.getCenter();
+                        evt.bearing = map.getBearing();
+                        evt.pitch = map.getPitch();
+                        component.dispatchEvent(evt);
+                    });
+                                
+                    """);
+
+            getElement().addEventListener("map-moveend", domEvent -> {
+                        MoveEndEvent event = new MoveEndEvent(domEvent);
+                        for (MoveEndListener l : moveEndListeners) {
+                            l.onMove(event);
+                        }
+                    })
+                    .addEventData("event.c")
+                    .addEventData("event.bearing")
+                    .addEventData("event.pitch")
+                    .addEventData("event.sw")
+                    .addEventData("event.ne")
+                    .debounce(150); // resizing may cause a ton of events, do a bit of debouncing
+        }
+        moveEndListeners.add(listener);
+    }
+
+    public interface MoveEndListener {
+
+        public void onMove(MoveEndEvent event);
+
+    }
+
     public interface MapClickListener {
 
         public void onClick(MapClickEvent event);
 
+    }
+
+    public class MoveEndEvent {
+
+        private final double bearing;
+        private final double pitch;
+        private final Point southWest;
+        private final Point northEast;
+        private final Point center;
+
+        public MoveEndEvent(DomEvent domEvent) {
+            GeometryFactory gf = new GeometryFactory();
+            double swlat = domEvent.getEventData().getObject("event.sw").getNumber("lat");
+            double swlng = domEvent.getEventData().getObject("event.sw").getNumber("lng");
+            this.southWest = gf.createPoint(new Coordinate(swlng, swlat));
+            double nelat = domEvent.getEventData().getObject("event.ne").getNumber("lat");
+            double nelng = domEvent.getEventData().getObject("event.ne").getNumber("lng");
+            this.northEast = gf.createPoint(new Coordinate(nelng, nelat));
+            double clat = domEvent.getEventData().getObject("event.c").getNumber("lat");
+            double clng = domEvent.getEventData().getObject("event.c").getNumber("lng");
+            this.center = gf.createPoint(new Coordinate(clng, clat));
+            this.bearing = domEvent.getEventData().getNumber("event.bearing");
+            this.pitch = domEvent.getEventData().getNumber("event.pitch");
+        }
+
+        public double getBearing() {
+            return bearing;
+        }
+
+        public double getPitch() {
+            return pitch;
+        }
+
+        public Point getCenter() {
+            return center;
+        }
+
+        public Point getNorthEast() {
+            return northEast;
+        }
+
+        public Point getSouthWest() {
+            return southWest;
+        }
+
+        @Override
+        public String toString() {
+            return "MoveEnd{" +
+                    "bearing=" + bearing +
+                    ", pitch=" + pitch +
+                    ", southWest=" + southWest +
+                    ", northEast=" + northEast +
+                    ", center=" + center +
+                    '}';
+        }
     }
 
     public class MapClickEvent {

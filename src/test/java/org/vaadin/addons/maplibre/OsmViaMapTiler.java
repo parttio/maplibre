@@ -46,8 +46,11 @@ public class OsmViaMapTiler extends VerticalLayout {
                 Notification.show(str);
             });
 
+            map.addMoveEndListener(event -> {
+                Notification.show(event.toString()).setPosition(Notification.Position.TOP_END);
+            });
 
-            add(map);
+            addAndExpand(map);
 
             Button b = new Button("Zoom to content");
             b.addClickListener(e -> {
