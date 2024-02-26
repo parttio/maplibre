@@ -8,6 +8,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinService;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
@@ -26,14 +27,14 @@ public class BinderCompatibleFields extends VVerticalLayout {
     private final Binder<Dto> binder;
     private TextField name = new TextField("Name (just as a reference)");
     private PolygonField polygon = new PolygonField("Polygon (org.locationtech.jts.geom.Polygon)")
-            .withStyleUrl(basemapStyle)
             .withAllowCuttingHoles(true);
-    private LineStringField line = new LineStringField("LineString")
-            .withStyleUrl(basemapStyle);
-    private PointField point = new PointField("Point")
-            .withStyleUrl(basemapStyle);
+    private LineStringField line = new LineStringField("LineString");
+    private PointField point = new PointField("Point");
 
     public BinderCompatibleFields() {
+
+        // Typically you should set this in some configuration bean
+        VaadinService.getCurrent().getContext().setAttribute(MapLibreBaseMapProvider.class, () -> basemapStyle);
 
         configure(polygon);
         configure(line);

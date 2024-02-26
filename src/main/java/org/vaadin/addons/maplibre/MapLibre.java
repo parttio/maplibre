@@ -7,15 +7,15 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.VelocityContext;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -49,6 +49,22 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     private int zoomLevel = 0;
     private HashMap<String, Runnable> jsCallbacks = new HashMap<>();
     private List<MapClickListener> mapClickListeners;
+
+    public MapLibre() {
+        VaadinContext context = VaadinService.getCurrent().getContext();
+        Object o = context.getAttribute(MapLibreBaseMapProvider.class).provideBaseStyle();
+        if (o instanceof String url) {
+            init(null, url);
+        } else if(o instanceof InputStream styleJson) {
+            try {
+                init(IOUtils.toString(styleJson, Charset.defaultCharset()), null);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (o instanceof URI uri) {
+            init(null, uri.toString());
+        }
+    }
 
     public MapLibre(URI styleUrl) {
         init(null, styleUrl.toString());
@@ -469,13 +485,15 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     }
 
     public class MapClickEvent {
-        private final Layer layer;
+        private Layer layer;
         private final Coordinate point;
         private final Coordinate pixelCoordinate;
 
         public MapClickEvent(DomEvent domEvent) {
-            String fId = domEvent.getEventData().getString("event.featureId");
-            this.layer = idToLayer.get(fId);
+            if(domEvent.getEventData().hasKey("event.featureId")) {
+                String fId = domEvent.getEventData().getString("event.featureId");
+                this.layer = idToLayer.get(fId);
+            }
             try {
                 LngLatRecord ll = AbstractKebabCasedDto.mapper.readValue(
                         domEvent.getEventData().getString("event.lngLat"), LngLatRecord.class);

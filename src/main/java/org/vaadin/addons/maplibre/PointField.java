@@ -1,15 +1,9 @@
 package org.vaadin.addons.maplibre;
 
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.customfield.CustomField;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryCollection;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
 
-public class PointField extends CustomField<Point> implements Marker.DragEndListener {
-    MapLibre map;
+public class PointField extends AbstractFeatureField<Point> implements Marker.DragEndListener {
     private Point point;
     private Marker marker;
 
@@ -19,23 +13,6 @@ public class PointField extends CustomField<Point> implements Marker.DragEndList
     }
 
     public PointField() {
-    }
-
-    public void setHeight(String height) {
-        super.setHeight(height);
-        addClassName("maplibre-field-has-size");
-        map.setHeightFull();
-    }
-
-    @Override
-    public void setWidth(String width) {
-        super.setWidth(width);
-        map.setWidth(width);
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
     }
 
     @Override
@@ -51,39 +28,38 @@ public class PointField extends CustomField<Point> implements Marker.DragEndList
         } else {
             // edit existing
             if(marker == null) {
-                marker = map.addMarker(point)
+                marker = getMap().addMarker(point)
                         .addDragEndListener(this);
             } else {
                 marker.setPoint(point);
             }
-            map.setCenter(point.getX(), point.getY());
+            getMap().setCenter(point.getX(), point.getY());
         }
     }
 
-    public PointField withStyleUrl(String styleUrl) {
-        this.map = new MapLibre(styleUrl);
-        map.addMapClickListener(event -> {
+    @Override
+    protected void setMap(MapLibre map) {
+        super.setMap(map);
+        getMap().addMapClickListener(event -> {
             Coordinate coordinate = event.getPoint();
-            assingPointFromCoordinate(coordinate);
+            assignPointFromCoordinate(coordinate);
             if(marker == null) {
-                marker = map.addMarker(point)
+                marker = getMap().addMarker(point)
                         .addDragEndListener(this);
             } else  {
                 marker.setPoint(point);
             }
             updateValue();
         });
-        add(map);
-        return this;
     }
 
-    private void assingPointFromCoordinate(Coordinate coordinate) {
+    private void assignPointFromCoordinate(Coordinate coordinate) {
         point = MapLibre.gf.createPoint(coordinate);
     }
 
     @Override
     public void dragEnd(Coordinate coordinate) {
-        assingPointFromCoordinate(coordinate);
+        assignPointFromCoordinate(coordinate);
         updateValue();
     }
 }

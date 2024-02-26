@@ -18,21 +18,20 @@ public class LineStringField extends AbstractFeatureField<LineString> {
     }
 
     @Override
-    public LineStringField withStyleUrl(String styleUrl) {
-        super.withStyleUrl(styleUrl);
-        this.drawControl.addGeometryChangeListener(e -> {
+    protected void setMap(MapLibre map) {
+        super.setMap(map);
+        getDrawControl().addGeometryChangeListener(e -> {
             GeometryCollection geom = e.getGeom();
             lineString = (LineString) geom.getGeometryN(0);
             updateValue();
         });
-        return this;
     }
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         if(lineString == null) {
-            drawControl.setMode(DrawControl.DrawMode.DRAW_LINE_STRING);
+            getDrawControl().setMode(DrawControl.DrawMode.DRAW_LINE_STRING);
         }
     }
 
@@ -46,12 +45,12 @@ public class LineStringField extends AbstractFeatureField<LineString> {
         this.lineString = lineString;
         if (lineString == null) {
             // put into drawing mode
-            drawControl.setMode(DrawControl.DrawMode.DRAW_POLYGON);
+            getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
         } else {
             // edit existing
-            drawControl.setGeometry(lineString);
-            drawControl.directSelectFirst();
-            map.fitBounds(lineString);
+            getDrawControl().setGeometry(lineString);
+            getDrawControl().directSelectFirst();
+            getMap().fitBounds(lineString);
         }
     }
 }

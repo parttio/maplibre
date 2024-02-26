@@ -24,7 +24,7 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
         cutHole.addClassName("maplibre-cut-hole");
         cutHole.setTooltipText("Cut a new whole to the current polygon.");
         cutHole.addClickListener(e -> {
-            drawControl.setMode(DrawControl.DrawMode.DRAW_POLYGON);
+            getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
             cuttingHole = true;
         });
     }
@@ -35,9 +35,9 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
     }
 
     @Override
-    public PolygonField withStyleUrl(String styleUrl) {
-        super.withStyleUrl(styleUrl);
-        this.drawControl.addGeometryChangeListener(e -> {
+    protected void setMap(MapLibre map) {
+        super.setMap(map);
+        getDrawControl().addGeometryChangeListener(e -> {
             GeometryCollection geom = e.getGeom();
             if(cuttingHole) {
                 cuttingHole = false;
@@ -47,13 +47,13 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
                 } catch (Exception ex) {
                     Notification.show("Cutting hole failed, make sure it is withing the existing Polygon and doesn't conflict other holes.");
                 }
-                drawControl.setGeometry(polygon);
+                getDrawControl().setGeometry(polygon);
             } else {
                 polygon = (Polygon) geom.getGeometryN(0);
+                cutHole.setVisible(allowCuttingHoles && polygon != null);
             }
             updateValue();
         });
-        return this;
     }
 
     public PolygonField withAllowCuttingHoles(boolean allow) {
@@ -65,7 +65,7 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         if(polygon == null) {
-            drawControl.setMode(DrawControl.DrawMode.DRAW_POLYGON);
+            getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
         }
     }
 
@@ -80,13 +80,13 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
         cutHole.setVisible(allowCuttingHoles && polygon != null);
         if (polygon == null) {
             // put into drawing mode
-            drawControl.setMode(DrawControl.DrawMode.DRAW_POLYGON);
+            getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
         } else {
             // edit existing
-            drawControl.setGeometry(polygon);
-            drawControl.setMode(DrawControl.DrawMode.SIMPLE_SELECT);
-            drawControl.directSelectFirst();
-            map.fitBounds(polygon);
+            getDrawControl().setGeometry(polygon);
+            getDrawControl().setMode(DrawControl.DrawMode.SIMPLE_SELECT);
+            getDrawControl().directSelectFirst();
+            getMap().fitBounds(polygon);
         }
     }
 
