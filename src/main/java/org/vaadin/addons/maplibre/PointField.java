@@ -16,6 +16,15 @@ public class PointField extends AbstractFeatureField<Point> implements Marker.Dr
     }
 
     @Override
+    protected void reset() {
+        super.reset();
+        point = null;
+        updateValue();
+        marker.remove();
+        marker = null;
+    }
+
+    @Override
     protected Point generateModelValue() {
         return point;
     }
@@ -23,8 +32,13 @@ public class PointField extends AbstractFeatureField<Point> implements Marker.Dr
     @Override
     protected void setPresentationValue(Point point) {
         this.point = point;
+        getResetButton().setVisible(point != null);
         if (point == null) {
             // Click will insert marker
+            if(marker != null) {
+                marker.remove();
+                marker = null;
+            }
         } else {
             // edit existing
             if(marker == null) {
@@ -49,6 +63,7 @@ public class PointField extends AbstractFeatureField<Point> implements Marker.Dr
             } else  {
                 marker.setPoint(point);
             }
+            getResetButton().setVisible(true);
             updateValue();
         });
     }

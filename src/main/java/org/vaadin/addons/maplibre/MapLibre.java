@@ -52,7 +52,14 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     public MapLibre() {
         VaadinContext context = VaadinService.getCurrent().getContext();
-        Object o = context.getAttribute(MapLibreBaseMapProvider.class).provideBaseStyle();
+        MapLibreBaseMapProvider provider = context.getAttribute(MapLibreBaseMapProvider.class);
+        if(provider == null) {
+            // this is probably never what actual people want, log warning?
+            init(null, "https://demotiles.maplibre.org/style.json");
+            return;
+        }
+        Object o = provider.provideBaseStyle();
+
         if (o instanceof String url) {
             init(null, url);
         } else if(o instanceof InputStream styleJson) {

@@ -1,5 +1,6 @@
 vaadin-custom-field.maplibre-field-has-size::part(input-fields) {
     flex-grow: 1;
+    position: relative;
 }
 
 vaadin-custom-field .maplibre-toolbar {

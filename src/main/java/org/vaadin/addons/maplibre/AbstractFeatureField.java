@@ -67,7 +67,7 @@ public abstract class AbstractFeatureField<T> extends CustomField<T> {
 
     public DrawControl getDrawControl() {
         if (drawControl == null) {
-            drawControl = new DrawControl(map);
+            drawControl = new DrawControl(getMap());
         }
         return drawControl;
     }
