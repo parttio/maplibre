@@ -4,6 +4,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Polygon;
@@ -21,6 +22,7 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
         cutHole.setVisible(false);
         cutHole.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
         cutHole.addClassName("maplibre-cut-hole");
+        cutHole.setTooltipText("Cut a new whole to the current polygon.");
         cutHole.addClickListener(e -> {
             drawControl.setMode(DrawControl.DrawMode.DRAW_POLYGON);
             cuttingHole = true;
@@ -38,9 +40,13 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
         this.drawControl.addGeometryChangeListener(e -> {
             GeometryCollection geom = e.getGeom();
             if(cuttingHole) {
-                Geometry hole = geom.getGeometryN(1);
-                polygon = (Polygon) geom.getGeometryN(0).symDifference(hole);
                 cuttingHole = false;
+                try {
+                    Geometry hole = geom.getGeometryN(1);
+                    polygon = (Polygon) geom.getGeometryN(0).symDifference(hole);
+                } catch (Exception ex) {
+                    Notification.show("Cutting hole failed, make sure it is withing the existing Polygon and doesn't conflict other holes.");
+                }
                 drawControl.setGeometry(polygon);
             } else {
                 polygon = (Polygon) geom.getGeometryN(0);
