@@ -24,7 +24,21 @@ public class LineStringField extends AbstractFeatureField<LineString> {
             GeometryCollection geom = e.getGeom();
             lineString = (LineString) geom.getGeometryN(0);
             updateValue();
+            getResetButton().setVisible(true);
         });
+        getDrawControl().addModeChangeListener(e -> {
+            if(lineString == null && e.getDrawMode() != DrawControl.DrawMode.DRAW_LINE_STRING) {
+                getDrawControl().setMode(DrawControl.DrawMode.DRAW_LINE_STRING);
+            }
+        });
+    }
+
+    @Override
+    protected void reset() {
+        super.reset();
+        lineString = null;
+        getDrawControl().setMode(DrawControl.DrawMode.DRAW_LINE_STRING);
+        updateValue();
     }
 
     @Override
@@ -43,6 +57,7 @@ public class LineStringField extends AbstractFeatureField<LineString> {
     @Override
     protected void setPresentationValue(LineString lineString) {
         this.lineString = lineString;
+        getResetButton().setVisible(lineString != null);
         if (lineString == null) {
             // put into drawing mode
             getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);

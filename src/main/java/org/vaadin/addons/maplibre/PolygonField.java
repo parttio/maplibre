@@ -18,9 +18,9 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
     Button cutHole = new Button(VaadinIcon.SCISSORS.create());
 
     public PolygonField() {
-        add(cutHole);
+        getToolbar().add(cutHole);
         cutHole.setVisible(false);
-        cutHole.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+        cutHole.addThemeVariants(ButtonVariant.LUMO_SMALL);
         cutHole.addClassName("maplibre-cut-hole");
         cutHole.setTooltipText("Cut a new whole to the current polygon.");
         cutHole.addClickListener(e -> {
@@ -51,8 +51,15 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
             } else {
                 polygon = (Polygon) geom.getGeometryN(0);
                 cutHole.setVisible(allowCuttingHoles && polygon != null);
+                getResetButton().setVisible(polygon != null);
             }
             updateValue();
+        });
+        getDrawControl().addModeChangeListener(e -> {
+            if(polygon == null && e.getDrawMode() != DrawControl.DrawMode.DRAW_POLYGON) {
+                getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
+            }
+
         });
     }
 
@@ -75,9 +82,19 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
     }
 
     @Override
+    protected void reset() {
+        super.reset();
+        getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
+        cutHole.setVisible(false);
+        polygon = null;
+        updateValue();
+    }
+
+    @Override
     protected void setPresentationValue(Polygon polygon) {
         this.polygon = polygon;
         cutHole.setVisible(allowCuttingHoles && polygon != null);
+        getResetButton().setVisible(polygon != null);
         if (polygon == null) {
             // put into drawing mode
             getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
