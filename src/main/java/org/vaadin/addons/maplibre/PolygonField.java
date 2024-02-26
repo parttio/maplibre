@@ -1,16 +1,34 @@
 package org.vaadin.addons.maplibre;
 
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Polygon;
 
 public class PolygonField extends AbstractFeatureField<Polygon> {
+    private boolean cuttingHole;
+
+    private boolean allowCuttingHoles = false;
     private Polygon polygon;
 
+    Button cutHole = new Button(VaadinIcon.SCISSORS.create());
+
     public PolygonField() {
+        add(cutHole);
+        cutHole.setVisible(false);
+        cutHole.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+        cutHole.addClassName("maplibre-cut-hole");
+        cutHole.addClickListener(e -> {
+            drawControl.setMode(DrawControl.DrawMode.DRAW_POLYGON);
+            cuttingHole = true;
+        });
     }
 
     public PolygonField(String label) {
+        this();
         setLabel(label);
     }
 
@@ -19,9 +37,21 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
         super.withStyleUrl(styleUrl);
         this.drawControl.addGeometryChangeListener(e -> {
             GeometryCollection geom = e.getGeom();
-            polygon = (Polygon) geom.getGeometryN(0);
+            if(cuttingHole) {
+                Geometry hole = geom.getGeometryN(1);
+                polygon = (Polygon) geom.getGeometryN(0).symDifference(hole);
+                cuttingHole = false;
+                drawControl.setGeometry(polygon);
+            } else {
+                polygon = (Polygon) geom.getGeometryN(0);
+            }
             updateValue();
         });
+        return this;
+    }
+
+    public PolygonField withAllowCuttingHoles(boolean allow) {
+        allowCuttingHoles = allow;
         return this;
     }
 
@@ -41,6 +71,7 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
     @Override
     protected void setPresentationValue(Polygon polygon) {
         this.polygon = polygon;
+        cutHole.setVisible(allowCuttingHoles && polygon != null);
         if (polygon == null) {
             // put into drawing mode
             drawControl.setMode(DrawControl.DrawMode.DRAW_POLYGON);
@@ -52,4 +83,5 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
             map.fitBounds(polygon);
         }
     }
+
 }

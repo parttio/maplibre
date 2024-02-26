@@ -26,7 +26,8 @@ public class BinderCompatibleFields extends VVerticalLayout {
     private final Binder<Dto> binder;
     private TextField name = new TextField("Name (just as a reference)");
     private PolygonField polygon = new PolygonField("Polygon (org.locationtech.jts.geom.Polygon)")
-            .withStyleUrl(basemapStyle);
+            .withStyleUrl(basemapStyle)
+            .withAllowCuttingHoles(true);
     private LineStringField line = new LineStringField("LineString")
             .withStyleUrl(basemapStyle);
     private PointField point = new PointField("Point")
