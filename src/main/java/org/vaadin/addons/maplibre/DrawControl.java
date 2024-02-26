@@ -164,7 +164,12 @@ public class DrawControl {
         String geojsonstr = new GeoJsonWriter().write(geometry);
         js("""
             const geojson = JSON.parse('$geojsonstr');
-            draw.deleteAll().add(geojson);
+            draw.deleteAll();
+            if(geojson.type == "GeometryCollection") {
+               geojson.geometries.forEach(g => draw.add(g));
+            } else {
+                draw.add(geojson);
+            }
         """, Map.of("geojsonstr", geojsonstr));
     }
 
@@ -175,6 +180,10 @@ public class DrawControl {
                 featureId : id
             });
         """, Collections.emptyMap());
+    }
+
+    public void removeGeometryChangeListener(DrawEventListener<GeometryChangeEvent> l) {
+        changeListeners.remove(l);
     }
 
     public enum DrawMode {
