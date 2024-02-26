@@ -3,6 +3,7 @@ package org.vaadin.addons.maplibre;
 import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.dependency.StyleSheet;
 
+@StyleSheet("context://org/vaadin/addons/maplibre/maplibre-addon.css")
 public abstract class AbstractFeatureField<T> extends CustomField<T> {
     DrawControl drawControl;
     MapLibre map;
@@ -25,12 +26,7 @@ public abstract class AbstractFeatureField<T> extends CustomField<T> {
     @Override
     public void setHeight(String height) {
         super.setHeight(height);
-        // TODO figure out how to do this properly, can't be right...
-        // make the custom field's input slot take all available space
-        getElement().executeJs("""
-            var el = this;
-            el.shadowRoot.querySelector(".inputs-wrapper").style.flexGrow = 1;
-        """);
+        addClassName("maplibre-field-has-size");
         map.setHeightFull();
     }
 

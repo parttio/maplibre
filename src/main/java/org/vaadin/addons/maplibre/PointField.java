@@ -14,6 +14,7 @@ public class PointField extends CustomField<Point> implements Marker.DragEndList
     private Marker marker;
 
     public PointField(String label) {
+        this();
         setLabel(label);
     }
 
@@ -22,12 +23,7 @@ public class PointField extends CustomField<Point> implements Marker.DragEndList
 
     public void setHeight(String height) {
         super.setHeight(height);
-        // TODO figure out how to do this properly, can't be right...
-        // make the custom field's input slot take all available space
-        getElement().executeJs("""
-            var el = this;
-            el.shadowRoot.querySelector(".inputs-wrapper").style.flexGrow = 1;
-        """);
+        addClassName("maplibre-field-has-size");
         map.setHeightFull();
     }
 

@@ -1,0 +1,3 @@
+vaadin-custom-field.maplibre-field-has-size::part(input-fields) {
+    flex-grow: 1;
+}
