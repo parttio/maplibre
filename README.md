@@ -2,6 +2,21 @@
 
 A Vaadin add-on that implements Java API for [MapLibreGL](https://maplibre.org) slippy map component.
 
+Features:
+
+ * Show vector tile maps as background layer
+ * Plot markers, lines and polygons on the map using the "standard" JTS data types.
+ * Binder compatible editor components for Point, LineString and Polygon data types.
+
+For code examples, check out the src/test/java directory.
+
+Online demos:
+
+ * [Marker, MapTiler base layer & user geolocation](https://addons.dokku1.parttio.org/maplibre)
+ * [Editor fields](https://addons.dokku1.parttio.org/maplibrejtseditors)
+
+[Demo app showing the basic features]()
+
 ## Development instructions
 
 Currently, the add-on is implemented purely with DOM API + JS calls. The required JS & CSS are injected on the fly. The rationaly was to avoid the need for custom front-end bundle -> easier to maintain and take in use in application projects.
