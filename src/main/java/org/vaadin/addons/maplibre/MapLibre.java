@@ -146,7 +146,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
      * to load it from a local file instead of from unpkg.com.</p>
      */
     protected void loadMapLibreJs() {
-        JSLoader.loadUnpkg(this, "maplibre-gl", "latest", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
+        JSLoader.loadUnpkg(this, "maplibre-gl", "4.1.2", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
     }
 
     public Double getZoomLevel() {
