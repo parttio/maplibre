@@ -1,5 +1,6 @@
 package org.vaadin.addons.maplibre;
 
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import org.vaadin.firitin.components.RichText;
@@ -23,6 +24,11 @@ public class BasicMap extends VerticalLayout {
             map.setCenter(24.945831, 60.192059);
             map.setZoomLevel(3);
             add(map);
+
+            add(new Button("Switch background layers to OSM via MapTiler", e-> {
+                map.setStyle("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU");
+            }));
+
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

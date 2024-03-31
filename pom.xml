@@ -10,7 +10,7 @@
     <url>https://github.com/parttio/maplibre</url>
 
     <properties>
-        <vaadin.version>24.3.5</vaadin.version>
+        <vaadin.version>24.3.7</vaadin.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -109,6 +109,14 @@
             <version>2.7.3</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.jenetics</groupId>
+            <artifactId>jpx</artifactId>
+            <version>3.1.0</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>in.virit</groupId>
             <artifactId>mopo</artifactId>

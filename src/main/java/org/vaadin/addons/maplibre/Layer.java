@@ -6,7 +6,7 @@ public class Layer {
     final String id;
     final MapLibre map;
 
-    final Geometry geometry;
+    Geometry geometry;
 
     Layer(MapLibre map, String id, Geometry geometry) {
         this.map = map;

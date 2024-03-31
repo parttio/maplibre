@@ -69,14 +69,6 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
     }
 
     @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-        if(polygon == null) {
-            getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
-        }
-    }
-
-    @Override
     protected Polygon generateModelValue() {
         return polygon;
     }
@@ -95,16 +87,19 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
         this.polygon = polygon;
         cutHole.setVisible(allowCuttingHoles && polygon != null);
         getResetButton().setVisible(polygon != null);
-        if (polygon == null) {
-            // put into drawing mode
-            getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
-        } else {
-            // edit existing
-            getDrawControl().setGeometry(polygon);
-            getDrawControl().setMode(DrawControl.DrawMode.SIMPLE_SELECT);
-            getDrawControl().directSelectFirst();
-            getMap().fitBounds(polygon);
-        }
+        runAttached(() -> {
+            if (polygon == null) {
+                // put into drawing mode
+                getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
+            } else {
+                // edit existing
+                getDrawControl().setGeometry(polygon);
+                getDrawControl().setMode(DrawControl.DrawMode.SIMPLE_SELECT);
+                getDrawControl().directSelectFirst();
+                getMap().fitBounds(polygon);
+            }
+        });
+
     }
 
 }

@@ -27,18 +27,21 @@ public class DrawControl {
 
     private final MapLibre map;
     private final String id = "draw" + UUID.randomUUID().toString().substring(0, 4);
+    private String stylesJson = "null";
     private List<DrawEventListener<ModeChangeEvent>> modeChangeListeners;
     private DrawMode mode = DrawMode.SIMPLE_SELECT;
     private ArrayList<DrawEventListener<GeometryChangeEvent>> changeListeners;
 
-    public DrawControl(MapLibre map) {
+    public DrawControl(MapLibre map, String stylesJson) {
         this.map = map;
+        this.stylesJson = stylesJson;
         injectScript();
-        map.addAttachListener(e -> {
-            doInit();
-        });
         if (map.isAttached()) {
             doInit();
+        } else {
+            map.addAttachListener(e -> {
+                doInit();
+            });
         }
     }
 
@@ -77,6 +80,11 @@ public class DrawControl {
                     defaultMode : "%s",
                     displayControlsDefault: false
                 };
+                const styles = %s;
+                if(styles != null) {
+                    drawOptions.styles = styles;
+                }
+
                 const id = "%s";
                 const draw = new MapboxDraw(drawOptions);
                 map[id] = draw;
@@ -108,7 +116,7 @@ public class DrawControl {
                 });
                 
                 
-                """.formatted(mode.toString().toLowerCase(), id));
+                """.formatted(mode.toString().toLowerCase(), stylesJson, id));
     }
 
     public void setMode(DrawMode mode) {

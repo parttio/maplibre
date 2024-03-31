@@ -42,14 +42,6 @@ public class LineStringField extends AbstractFeatureField<LineString> {
     }
 
     @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-        if(lineString == null) {
-            getDrawControl().setMode(DrawControl.DrawMode.DRAW_LINE_STRING);
-        }
-    }
-
-    @Override
     protected LineString generateModelValue() {
         return lineString;
     }
@@ -58,14 +50,16 @@ public class LineStringField extends AbstractFeatureField<LineString> {
     protected void setPresentationValue(LineString lineString) {
         this.lineString = lineString;
         getResetButton().setVisible(lineString != null);
-        if (lineString == null) {
-            // put into drawing mode
-            getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
-        } else {
-            // edit existing
-            getDrawControl().setGeometry(lineString);
-            getDrawControl().directSelectFirst();
-            getMap().fitBounds(lineString);
-        }
+        runAttached(() -> {
+            if (lineString == null) {
+                // put into drawing mode
+                getDrawControl().setMode(DrawControl.DrawMode.DRAW_LINE_STRING);
+            } else {
+                // edit existing
+                getDrawControl().setGeometry(lineString);
+                getDrawControl().directSelectFirst();
+                getMap().fitBounds(lineString);
+            }
+        });
     }
 }

@@ -1,5 +1,6 @@
 package org.vaadin.addons.maplibre;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.customfield.CustomField;
@@ -10,11 +11,13 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 @StyleSheet("context://org/vaadin/addons/maplibre/maplibre-addon.css")
 public abstract class AbstractFeatureField<T> extends CustomField<T> {
+    protected Runnable deferredTask;
     private DrawControl drawControl;
     private MapLibre map;
 
     private HorizontalLayout toolbar = new HorizontalLayout();
     private Button resetButton = new Button(VaadinIcon.TRASH.create(), e -> this.reset());
+    private String stylesJson;
 
     protected void reset() {
         if(drawControl != null) {
@@ -67,7 +70,7 @@ public abstract class AbstractFeatureField<T> extends CustomField<T> {
 
     public DrawControl getDrawControl() {
         if (drawControl == null) {
-            drawControl = new DrawControl(getMap());
+            drawControl = new DrawControl(getMap(), stylesJson);
         }
         return drawControl;
     }
@@ -85,4 +88,32 @@ public abstract class AbstractFeatureField<T> extends CustomField<T> {
         getMap().setWidth(width);
     }
 
+    protected void runAttached(Runnable task) {
+        if(!isAttached()) {
+            this.deferredTask = task;
+        } else {
+            task.run();
+        }
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        if(getWidth() == null) {
+            setMinWidth("100px");
+            setWidthFull();
+        }
+
+        if(attachEvent.isInitialAttach() && getValue() == null) {
+            setPresentationValue(null);
+        }
+        super.onAttach(attachEvent);
+        if(deferredTask != null) {
+            deferredTask.run();
+            deferredTask = null;
+        }
+    }
+
+    public void setStylesJson(String stylesJson) {
+        this.stylesJson = stylesJson;
+    }
 }

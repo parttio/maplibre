@@ -1,7 +1,9 @@
 package org.vaadin.addons.maplibre;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClientCallable;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
@@ -16,6 +18,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -30,6 +33,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -44,61 +48,93 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     static GeometryFactory gf = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), 4326);
 
     private final HashMap<String, Layer> idToLayer = new HashMap<>();
+    // base style as Json
+    private String styleJson;
+    // base style url
+    private String styleUrl;
     private ArrayList<MoveEndListener> moveEndListeners;
-    private Coordinate center = new Coordinate(0, 0);
-    private int zoomLevel = 0;
+    private Coordinate center;
+    private Double zoomLevel;
     private HashMap<String, Runnable> jsCallbacks = new HashMap<>();
     private List<MapClickListener> mapClickListeners;
+    private boolean initialized;
+    private boolean detached;
+    private LinkedList<Runnable> deferredJsCalls = new LinkedList<>();
 
     public MapLibre() {
         VaadinContext context = VaadinService.getCurrent().getContext();
         MapLibreBaseMapProvider provider = context.getAttribute(MapLibreBaseMapProvider.class);
-        if(provider == null) {
+        if (provider == null) {
             // this is probably never what actual people want, log warning?
-            init(null, "https://demotiles.maplibre.org/style.json");
+            this.styleUrl = "https://demotiles.maplibre.org/style.json";
             return;
         }
         Object o = provider.provideBaseStyle();
 
         if (o instanceof String url) {
-            init(null, url);
-        } else if(o instanceof InputStream styleJson) {
+            styleUrl = url;
+        } else if (o instanceof InputStream styleJson) {
             try {
-                init(IOUtils.toString(styleJson, Charset.defaultCharset()), null);
+                this.styleJson = IOUtils.toString(styleJson, Charset.defaultCharset());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         } else if (o instanceof URI uri) {
-            init(null, uri.toString());
+            styleUrl = uri.toString();
         }
+        setMinWidth("100px");
+        setMinHeight("100px");
     }
 
     public MapLibre(URI styleUrl) {
-        init(null, styleUrl.toString());
+        this.styleUrl = styleUrl.toString();
+        setMinWidth("100px");
+        setMinHeight("100px");
     }
 
     public MapLibre(String styleUrl) {
-        init(null, styleUrl);
+        this.styleUrl = styleUrl;
+        setMinWidth("100px");
+        setMinHeight("100px");
+
     }
 
     public MapLibre(InputStream styleJson) {
         try {
-            init(IOUtils.toString(styleJson, Charset.defaultCharset()), null);
+            this.styleJson = IOUtils.toString(styleJson, Charset.defaultCharset());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        setMinWidth("100px");
+        setMinHeight("100px");
     }
 
-    protected void init(String styleJson, String styleUrl) {
-        loadMapLibreJs();
-        setId("map");
-        setWidth("800px");
-        setHeight("500px");
+    private void init() {
+        if (!initialized) {
+            loadMapLibreJs();
+            jsTemplate("org/vaadin/addons/maplibre/mapinit.js", Map.of(
+                    "style", styleJson == null ? "null" : styleJson, // Map.of is not nullsafe :-(
+                    "styleUrl", styleUrl == null ? "null" : styleUrl,
+                    "setCenter", center != null,
+                    "setZoom", zoomLevel != null
+            ));
+            initialized = true;
+        }
+    }
 
-        jsTemplate("org/vaadin/addons/maplibre/mapinit.js", Map.of(
-                "style", styleJson == null ? "null" : styleJson, // Map.of is not nullsafe :-(
-                "styleUrl", styleUrl == null ? "null" : styleUrl
-        ));
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        init();
+        if (detached) {
+            throw new IllegalStateException("Re-attaching old map not currently supported!");
+        }
+        super.onAttach(attachEvent);
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
+        detached = true;
     }
 
     /**
@@ -113,13 +149,15 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         JSLoader.loadUnpkg(this, "maplibre-gl", "latest", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
     }
 
-    public Integer getZoomLevel() {
+    public Double getZoomLevel() {
         return zoomLevel;
     }
 
-    public void setZoomLevel(int zoomLevel) {
+    public void setZoomLevel(double zoomLevel) {
         this.zoomLevel = zoomLevel;
-        js("map.setZoom($this.zoomLevel);");
+        if(initialized) {
+            js("map.setZoom($this.zoomLevel);");
+        }
     }
 
     /**
@@ -135,7 +173,18 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public Coordinate getCenter() {
         return center;
     }
-    
+
+    public void setCenter(Coordinate coordinate) {
+        this.center = coordinate;
+        if (initialized) {
+            js("map.setCenter($GeoJsonHelper.toJs($this.center));");
+        }
+    }
+
+    public void setCenter(Geometry geom) {
+        setCenter(geom.getCentroid().getCoordinate());
+    }
+
     private void addSource(String name, Geometry geometry) {
         js("""
                     map.addSource('$name', {
@@ -145,7 +194,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 """, Map.of("name", name, "geometry", geometry));
     }
 
-    public Layer addLineLayer(Geometry geometry, LinePaint linePaint) {
+    public LineLayer addLineLayer(LineString geometry, LinePaint linePaint) {
         String id = UUID.randomUUID().toString();
         addSource(id, geometry);
         return addLineLayer(id, id, null, linePaint, geometry);
@@ -155,6 +204,12 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         String id = UUID.randomUUID().toString();
         addSource(id, polygon);
         return addFillLayer(id, id, null, style, polygon);
+    }
+
+    public Layer addFillLayer(Geometry geom, FillPaint style) {
+        String id = UUID.randomUUID().toString();
+        addSource(id, geom);
+        return addFillLayer(id, id, null, style, geom);
     }
 
     protected Layer addFillLayer(String name, String source, String sourceLayer, FillPaint paintJson, Geometry geom) {
@@ -176,7 +231,20 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         return new Layer(this, name, geom);
     }
 
-    protected Layer addLineLayer(String name, String source, String sourceLayer, LinePaint paint, Geometry geom) {
+    /**
+     * Adds a new layer only on the client sided
+     *
+     * @param name        the name of the new layer
+     * @param source      the source id
+     * @param sourceLayer the source layer
+     * @param paint       the paint for the features
+     * @return Layer handle (e.g. to remove the layer)
+     */
+    public LineLayer addLineLayer(String name, String source, String sourceLayer, LinePaint paint) {
+        return addLineLayer(name, source, sourceLayer, paint, null);
+    }
+
+    protected LineLayer addLineLayer(String name, String source, String sourceLayer, LinePaint paint, Geometry geom) {
         if (sourceLayer == null) {
             sourceLayer = "";
         } else {
@@ -196,7 +264,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                     });
                 """, Map.of("name", name, "source", source, "sourceLayer", sourceLayer, "paint", paint));
 
-        return new Layer(this, name, geom);
+        return new LineLayer(this, name, geom);
     }
 
     public void removeLayer(Layer layer) {
@@ -245,19 +313,11 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         setCenter(new Coordinate(x, y));
     }
 
-    public void setCenter(Coordinate coordinate) {
-        this.center = coordinate;
-        js("map.setCenter($GeoJsonHelper.toJs($this.center));");
-    }
-
-    public void setCenter(Geometry geom) {
-        setCenter(geom.getCentroid().getCoordinate());
-    }
-
     public void fitTo(Geometry geom, double padding) {
         Envelope envelope = geom.getEnvelopeInternal();
         fitTo(envelope, padding);
     }
+
     protected void fitTo(Envelope envelope, double padding) {
         fitTo("""
                     const bounds = new maplibregl.LngLatBounds(
@@ -291,6 +351,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
      * @return
      */
     protected PendingJavaScriptResult js(String js, Map<String, Object> variables) {
+        init();
         return velocityJs("""
                     const map = this.map;
                     const component = this;
@@ -305,8 +366,8 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 """.formatted(js), variables);
     }
 
-    protected void js(String js) {
-        js(js, Collections.emptyMap());
+    protected PendingJavaScriptResult js(String js) {
+        return js(js, Collections.emptyMap());
     }
 
     public void flyTo(Geometry geometry, double zoomLevel) {
@@ -388,6 +449,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                     map.on("moveend", e => {
                         var evt = new Event("map-moveend");
                         evt.viewport = component.getViewPort();
+                        evt.zoom = map.getZoom();
                         component.dispatchEvent(evt);
                     });
                     """);
@@ -399,6 +461,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                         }
                     })
                     .addEventData("event.viewport")
+                    .addEventData("event.zoom")
                     .debounce(150); // resizing may cause a ton of events, do a bit of debouncing
         }
         moveEndListeners.add(listener);
@@ -420,14 +483,33 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public void fitToContent() {
         List<Geometry> geometries = new ArrayList<>();
         idToLayer.values().forEach(layer ->
-            geometries.add(layer.getGeometry()));
-        if(geometries.size() > 0) {
+                geometries.add(layer.getGeometry()));
+        if (geometries.size() > 0) {
             Envelope env = geometries.get(0).getEnvelopeInternal();
-            for(Geometry g : geometries) {
-                env.expandToInclude(g.getEnvelopeInternal());
+            for (Geometry g : geometries) {
+                if (g != null) {
+                    env.expandToInclude(g.getEnvelopeInternal());
+                }
             }
             fitTo(env, 20);
         }
+    }
+
+    public void removeAll() {
+        ArrayList<Layer> layers = new ArrayList<>(this.idToLayer.values());
+        layers.forEach(l -> removeLayer(l));
+    }
+
+    /**
+     * Removes all current styles and layers and inits the map with given style URL
+     *
+     * @param styleUrl the styleUrl
+     */
+    public void setStyle(String styleUrl) {
+        removeAll();
+        js("""
+                map.setStyle("$style");
+                """, Map.of("style", styleUrl));
     }
 
     public interface MoveEndListener {
@@ -443,6 +525,18 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public record ViewPort(Point southWest, Point northEast, Point center, double bearing, double pitch) {
 
 
+        public static ViewPort of(JsonObject o) {
+            var southWest = gf.createPoint(new Coordinate(
+                    o.getObject("sw").getNumber("lng"),
+                    o.getObject("sw").getNumber("lat")));
+            double nelat = o.getObject("ne").getNumber("lat");
+            double nelng = o.getObject("ne").getNumber("lng");
+            var northEast = gf.createPoint(new Coordinate(nelng, nelat));
+            double clat = o.getObject("c").getNumber("lat");
+            double clng = o.getObject("c").getNumber("lng");
+            return new ViewPort(southWest, northEast, gf.createPoint(new Coordinate(clng, clat)), o.getNumber("bearing"), o.getNumber("pitch"));
+        }
+
         public Polygon getBounds() {
             // 4326
             // TODO this will most likely now not be perfect if bearing/pitch
@@ -457,30 +551,25 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
         }
 
-        public static ViewPort of(JsonObject o) {
-            var southWest = gf.createPoint(new Coordinate(
-                    o.getObject("sw").getNumber("lng"),
-                    o.getObject("sw").getNumber("lat")));
-            double nelat = o.getObject("ne").getNumber("lat");
-            double nelng = o.getObject("ne").getNumber("lng");
-            var northEast = gf.createPoint(new Coordinate(nelng, nelat));
-            double clat = o.getObject("c").getNumber("lat");
-            double clng = o.getObject("c").getNumber("lng");
-            return new ViewPort(southWest, northEast, gf.createPoint(new Coordinate(clng, clat)), o.getNumber("bearing"), o.getNumber("pitch"));
-        }
-
     }
 
     public class MoveEndEvent {
 
         ViewPort viewPort;
+        double zoomLevel;
 
         public MoveEndEvent(DomEvent domEvent) {
             this.viewPort = ViewPort.of(domEvent.getEventData().getObject("event.viewport"));
+            this.zoomLevel = domEvent.getEventData().getNumber("event.zoom");
+            MapLibre.this.zoomLevel = this.zoomLevel;
         }
 
         public ViewPort getViewPort() {
             return viewPort;
+        }
+
+        public double getZoomLevel() {
+            return zoomLevel;
         }
 
         @Override
@@ -492,12 +581,12 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     }
 
     public class MapClickEvent {
-        private Layer layer;
-        private final Coordinate point;
+        private final Coordinate coordinate;
         private final Coordinate pixelCoordinate;
+        private Layer layer;
 
         public MapClickEvent(DomEvent domEvent) {
-            if(domEvent.getEventData().hasKey("event.featureId")) {
+            if (domEvent.getEventData().hasKey("event.featureId")) {
                 String fId = domEvent.getEventData().getString("event.featureId");
                 this.layer = idToLayer.get(fId);
             }
@@ -506,15 +595,19 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                         domEvent.getEventData().getString("event.lngLat"), LngLatRecord.class);
                 PointRecord p = AbstractKebabCasedDto.mapper.readValue(
                         domEvent.getEventData().getString("event.point"), PointRecord.class);
-                this.point = new Coordinate(ll.lng, ll.lat);
+                this.coordinate = new Coordinate(ll.lng, ll.lat);
                 this.pixelCoordinate = new Coordinate(p.x, p.y);
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        public Coordinate getPoint() {
-            return point;
+        public Coordinate getCoordinate() {
+            return coordinate;
+        }
+
+        public Point getPoint() {
+            return MapLibre.gf.createPoint(coordinate);
         }
 
         public Layer getLayer() {
@@ -526,11 +619,6 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
         record PointRecord(double x, double y) {
         }
-    }
-
-    public void removeAll() {
-        ArrayList<Layer> layers = new ArrayList<>(this.idToLayer.values());
-        layers.forEach(l -> removeLayer(l));
     }
 
 }

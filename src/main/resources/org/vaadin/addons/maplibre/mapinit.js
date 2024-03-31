@@ -3,12 +3,20 @@ if(!style) {
     style = '$styleUrl';
 }
 const component = this;
-this.map = new maplibregl.Map({
-  container: this,
-  style: style,
-  center: $GeoJsonHelper.toJs($this.center),
-  zoom: $this.zoomLevel
-});
+const conf = {
+   container: this,
+   style: style
+}
+// center & zoom only if explicitly set, can com from style as well
+if($setCenter) {
+    conf.center = $GeoJsonHelper.toJs($this.center);
+}
+if($setZoom) {
+ conf.zoom =  $this.zoomLevel;
+}
+
+this.map = new maplibregl.Map(conf);
+
 this.map.on('load', () => {
     component.styleloaded = true;
 });

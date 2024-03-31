@@ -11,6 +11,7 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
 import org.apache.commons.io.IOUtils;
 import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
@@ -23,6 +24,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Route
 public class FinnishOpenDataExample extends VerticalLayout {
@@ -45,26 +47,22 @@ public class FinnishOpenDataExample extends VerticalLayout {
             setZoomLevel(15);
 
             // add Finnish estate data as name source
-
             addSource("kiinteisto-avoin", "{'type':'vector', 'url':\"https://avoin-karttakuva.maanmittauslaitos.fi/kiinteisto-avoin/v3/kiinteistojaotus/WGS84_Pseudo-Mercator/tilejson.json?api-key=95065def-f53b-44d6-b429-769c3d504e13\"}");
-
             addLineLayer("rajat", "kiinteisto-avoin", "KiinteistorajanSijaintitiedot", new LinePaint("rgba(255,0,0,1)", 2.0), null);
             addFillLayer("alueet", "kiinteisto-avoin", "PalstanSijaintitiedot", new FillPaint("rgba(255,0,0,0.015)", null), null);
 
             // Add a client side click listener to the map, to get the property id
             // from the base layer and pass that to server side method
-            getElement().executeJs("""
-                    const map = this.map;
-                    const component = this;
-                    map.on('click', (e) => {
-                            const features = map.queryRenderedFeatures(e.point);
-                            features.forEach(f => {
-                                if(f.properties['kiinteistotunnus']) {
-                                    component.$server.handleData(f.properties['kiinteistotunnus']);
-                                }
-                            });
+            js("""
+                map.on('click', (e) => {
+                        const features = map.queryRenderedFeatures(e.point);
+                        features.forEach(f => {
+                            if(f.properties['kiinteistotunnus']) {
+                                component.${server}.handleData(f.properties['kiinteistotunnus']);
+                            }
                         });
-                    """);
+                    });
+                """, Map.of("server", "$server"));
 
         }
 

@@ -27,6 +27,7 @@ public class Marker extends Layer {
     }
 
     public void setPoint(Point point) {
+        this.geometry = point;
         map.js("""
             const marker = component.markers['$id'];
             marker.setLngLat(new maplibregl.LngLat($x, $y));
@@ -95,5 +96,16 @@ public class Marker extends Layer {
         if(listeners != null) {
             listeners.forEach(map::deregisterJsCallback);
         }
+    }
+
+    public void setColor(String color) {
+        map.js("""
+            const marker = component.markers['$id'];
+            const element = marker.getElement();
+            const svg = element.getElementsByTagName("svg")[0];
+            const path = svg.getElementsByTagName("path")[0];
+            path.setAttribute("fill", "$color");
+        """, Map.of("id", id, "color", color));
+
     }
 }

@@ -55,7 +55,7 @@ public class PointField extends AbstractFeatureField<Point> implements Marker.Dr
     protected void setMap(MapLibre map) {
         super.setMap(map);
         getMap().addMapClickListener(event -> {
-            Coordinate coordinate = event.getPoint();
+            Coordinate coordinate = event.getCoordinate();
             assignPointFromCoordinate(coordinate);
             if(marker == null) {
                 marker = getMap().addMarker(point)

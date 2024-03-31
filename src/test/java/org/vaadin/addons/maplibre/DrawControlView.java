@@ -20,7 +20,7 @@ public class DrawControlView extends VVerticalLayout {
 
     public DrawControlView() {
         MapLibre map = new MapLibre("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU");
-        DrawControl drawControl = new DrawControl(map);
+        DrawControl drawControl = new DrawControl(map, null);
         addAndExpand(map);
 
         var toolbar = new VHorizontalLayout();
