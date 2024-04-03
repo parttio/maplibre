@@ -82,21 +82,14 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         } else if (o instanceof URI uri) {
             styleUrl = uri.toString();
         }
-        setMinWidth("100px");
-        setMinHeight("100px");
     }
 
     public MapLibre(URI styleUrl) {
         this.styleUrl = styleUrl.toString();
-        setMinWidth("100px");
-        setMinHeight("100px");
     }
 
     public MapLibre(String styleUrl) {
         this.styleUrl = styleUrl;
-        setMinWidth("100px");
-        setMinHeight("100px");
-
     }
 
     public MapLibre(InputStream styleJson) {
@@ -105,12 +98,18 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        setMinWidth("100px");
-        setMinHeight("100px");
     }
 
     private void init() {
         if (!initialized) {
+            if(getWidth() == null && getMinWidth() == null) {
+                setWidth("100%");
+                setMinWidth("100px");
+            }
+            if(getHeight() == null && getMinHeight() == null) {
+                setHeight("100%");
+                setMinHeight("100px");
+            }
             loadMapLibreJs();
             jsTemplate("org/vaadin/addons/maplibre/mapinit.js", Map.of(
                     "style", styleJson == null ? "null" : styleJson, // Map.of is not nullsafe :-(

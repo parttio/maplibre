@@ -45,6 +45,7 @@ public class FinnishOpenDataExample extends VerticalLayout {
 
             setCenter(22.2462, 60.1755);
             setZoomLevel(15);
+            setHeight("50vh");
 
             // add Finnish estate data as name source
             addSource("kiinteisto-avoin", "{'type':'vector', 'url':\"https://avoin-karttakuva.maanmittauslaitos.fi/kiinteisto-avoin/v3/kiinteistojaotus/WGS84_Pseudo-Mercator/tilejson.json?api-key=95065def-f53b-44d6-b429-769c3d504e13\"}");

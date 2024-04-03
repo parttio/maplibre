@@ -32,6 +32,10 @@ public class DrawControl {
     private DrawMode mode = DrawMode.SIMPLE_SELECT;
     private ArrayList<DrawEventListener<GeometryChangeEvent>> changeListeners;
 
+    public DrawControl(MapLibre map) {
+        this(map, null);
+    }
+
     public DrawControl(MapLibre map, String stylesJson) {
         this.map = map;
         this.stylesJson = stylesJson;

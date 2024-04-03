@@ -34,7 +34,6 @@ public class OsmViaMapTiler extends VerticalLayout {
                     .withPopup("Hello from Vaadin!")
                     .openPopup();
 
-
             Polygon polygon = (Polygon) new WKTReader().read("POLYGON((22.290 60.428, 22.310 60.429, 22.31 60.47, 22.28 60.47, 22.290 60.428))");
 
             map.addFillLayer(polygon, new FillPaint("red", 0.2));
