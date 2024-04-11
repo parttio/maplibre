@@ -184,6 +184,10 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         setCenter(geom.getCentroid().getCoordinate());
     }
 
+    public void setBearing(double bearing) {
+        js("map.setBearing($bearing);", Map.of("bearing", bearing));
+    }
+
     private void addSource(String name, Geometry geometry) {
         js("""
                     map.addSource('$name', {
@@ -455,6 +459,8 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
             getElement().addEventListener("map-moveend", domEvent -> {
                         MoveEndEvent event = new MoveEndEvent(domEvent);
+                        this.zoomLevel = event.getZoomLevel();
+                        this.center = event.getViewPort().center.getCoordinate();
                         for (MoveEndListener l : moveEndListeners) {
                             l.onMove(event);
                         }
@@ -484,13 +490,18 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         idToLayer.values().forEach(layer ->
                 geometries.add(layer.getGeometry()));
         if (geometries.size() > 0) {
-            Envelope env = geometries.get(0).getEnvelopeInternal();
-            for (Geometry g : geometries) {
-                if (g != null) {
-                    env.expandToInclude(g.getEnvelopeInternal());
+            try {
+                Envelope env = geometries.get(0).getEnvelopeInternal();
+                for (Geometry g : geometries) {
+                    if (g != null) {
+                        env.expandToInclude(g.getEnvelopeInternal());
+                    }
                 }
+                fitTo(env, 20);
+            } catch (Exception e) {
+
+                e.printStackTrace();
             }
-            fitTo(env, 20);
         }
     }
 
