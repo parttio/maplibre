@@ -6,15 +6,20 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Polygon;
+import org.vaadin.addons.maplibre.dto.FlyToOptions;
+import org.vaadin.addons.maplibre.dto.LngLat;
 import org.vaadin.firitin.components.RichText;
 import org.vaadin.firitin.geolocation.Geolocation;
 import org.vaadin.firitin.geolocation.GeolocationCoordinates;
 import org.vaadin.firitin.geolocation.GeolocationOptions;
+import org.vaadin.firitin.util.BrowserPrompt;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Route
 public class GpsTrackingAndRotation extends VerticalLayout {
@@ -48,15 +53,19 @@ public class GpsTrackingAndRotation extends VerticalLayout {
                 var p = gf.createPoint(coordinate);
                 marker.setPoint(p);
 
+                var targetView = new FlyToOptions();
                 Double heading = geolocation.getCoords().getHeading();
                 // heading is only available if moving, map will tilt then
                 if(heading != null) {
-                    map.setBearing(heading);
+                    targetView.setBearing(heading);
                 }
+
                 map.getViewPort().thenAccept(viewPort -> {
                     // adjust if marker has moved out of viewport
-                    if(!viewPort.getBounds().contains(p)) {
-                        map.flyTo(p);
+                    Polygon bounds = viewPort.getBounds();
+                    if(!bounds.contains(p)) {
+                        targetView.setCenter(p);
+                        map.flyTo(targetView);
                     }
                 });
             }
@@ -76,6 +85,24 @@ public class GpsTrackingAndRotation extends VerticalLayout {
         }, error -> {
             Notification.show(error.getErrorMessage());
         }, options);
+
+        add(new Button("Set bearing", e -> {
+            BrowserPrompt.promptInteger("Bearing")
+                    .thenAccept(map::setBearing);
+        }));
+        add(new Button("Fly to bearing", e -> {
+            BrowserPrompt.promptInteger("Bearing")
+                    .thenAccept(b -> {
+                        map.js("map.flyTo({bearing: $bearing})", Map.of("bearing", b));
+                    });
+        }));
+        add(new Button("Bearing from device (compass&accelometer)", e -> {
+            map.js("""
+                
+            
+            
+            """);
+        }));
 
     }
 }

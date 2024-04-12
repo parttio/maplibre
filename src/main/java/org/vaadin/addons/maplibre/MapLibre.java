@@ -8,6 +8,7 @@ import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -24,6 +25,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.parttio.vaadinjsloader.JSLoader;
+import org.vaadin.addons.maplibre.dto.FlyToOptions;
 import org.vaadin.addons.velocitycomponent.AbstractVelocityJsComponent;
 
 import java.io.IOException;
@@ -38,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A Java/Vaadin API for MapLibre GL JS.
@@ -60,10 +64,22 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     private boolean initialized;
     private boolean detached;
     private LinkedList<Runnable> deferredJsCalls = new LinkedList<>();
+    private Polygon lastKnownViewPort;
 
     public MapLibre() {
-        VaadinContext context = VaadinService.getCurrent().getContext();
-        MapLibreBaseMapProvider provider = context.getAttribute(MapLibreBaseMapProvider.class);
+
+        MapLibreBaseMapProvider provider = null;
+        try {
+            Instantiator instantiator = VaadinService.getCurrent().getInstantiator();
+            provider = instantiator.getOrCreate(MapLibreBaseMapProvider.class);
+        } catch (Exception e) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Error finding base map provider", e);
+        }
+        if(provider == null) {
+            // No bean to configure found, check context (original hack)
+            VaadinContext context = VaadinService.getCurrent().getContext();
+            provider = context.getAttribute(MapLibreBaseMapProvider.class);
+        }
         if (provider == null) {
             // this is probably never what actual people want, log warning?
             this.styleUrl = "https://demotiles.maplibre.org/style.json";
@@ -333,6 +349,10 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         js(envelope);
     }
 
+    public void flyTo(FlyToOptions flyToOptions) {
+        js("map.flyTo(%s)".formatted(flyToOptions));
+    }
+
     public void flyTo(double x, double y, Double zoom) {
         js("""
                     const opts = {
@@ -461,6 +481,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                         MoveEndEvent event = new MoveEndEvent(domEvent);
                         this.zoomLevel = event.getZoomLevel();
                         this.center = event.getViewPort().center.getCoordinate();
+                        this.lastKnownViewPort = event.getViewPort().getBounds();
                         for (MoveEndListener l : moveEndListeners) {
                             l.onMove(event);
                         }
@@ -631,4 +652,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         }
     }
 
+    public Polygon getLastKnownViewPort() {
+        return lastKnownViewPort;
+    }
 }
