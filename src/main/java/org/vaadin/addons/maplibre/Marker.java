@@ -1,5 +1,9 @@
 package org.vaadin.addons.maplibre;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.popover.Popover;
+import com.vaadin.flow.component.popover.PopoverVariant;
+import com.vaadin.flow.function.SerializableSupplier;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -10,6 +14,8 @@ import java.util.Map;
 
 public class Marker extends Layer {
 
+
+    private Popover popover;
 
     Marker(MapLibre map, String id, Coordinate coordinate) {
         super(map, id,new GeometryFactory().createPoint(coordinate));
@@ -34,11 +40,38 @@ public class Marker extends Layer {
         """, Map.of("id", id, "x", point.getX(), "y", point.getY()));
     }
 
-    public void openPopup() {
+    public Marker openPopup() {
         map.js("""
             const marker = component.markers['$id'];
             marker.getPopup().addTo(map);
             """, Map.of("id", id));
+        return this;
+    }
+
+    public Popover getPopover(SerializableSupplier<Component> contentSupplier) {
+        if(popover == null) {
+            popover = new Popover();
+            popover.addThemeVariants(PopoverVariant.ARROW);
+            addClickListener(() -> {
+                if(popover.getChildren().count() == 0) {
+                    popover.add(contentSupplier.get());
+            }
+                if(!popover.getParent().isPresent()) {
+                    // Apparently Popover needs to be somewhere in the dom to be able to open with id
+                    map.getElement().appendChild(popover.getElement());
+                }
+                popover.setFor(id);
+                popover.open();
+            });
+            popover.addOpenedChangeListener(e -> {
+                if(!e.isOpened() && e.isFromClient()) {
+                    popover.removeAll();
+                    popover.removeFromParent();
+                    popover.setFor(id);
+                }
+            });
+        }
+        return popover;
     }
 
     public interface DragEndListener {

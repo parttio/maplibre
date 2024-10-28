@@ -317,6 +317,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                     component.markers['$id'] = new maplibregl.Marker()
                             .setLngLat([$x, $y])
                             .addTo(map);
+                    component.markers['$id'].getElement().id = '$id';
                 """, Map.of("id", id, "x", x, "y", y));
         return new Marker(this, id, new Coordinate(x, y));
     }
