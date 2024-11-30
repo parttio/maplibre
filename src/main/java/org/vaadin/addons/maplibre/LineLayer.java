@@ -2,15 +2,12 @@ package org.vaadin.addons.maplibre;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class LineLayer extends Layer {
+public class LineLayer extends GeometryLayer {
     LineLayer(MapLibre map, String id, Geometry geometry) {
         super(map, id, geometry);
     }

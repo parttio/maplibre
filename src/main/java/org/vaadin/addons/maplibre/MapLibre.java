@@ -25,7 +25,11 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.parttio.vaadinjsloader.JSLoader;
+import org.vaadin.addons.maplibre.dto.AbstractKebabCasedDto;
+import org.vaadin.addons.maplibre.dto.AbstractMapSource;
 import org.vaadin.addons.maplibre.dto.FlyToOptions;
+import org.vaadin.addons.maplibre.dto.LayerDefinition;
+import org.vaadin.addons.maplibre.dto.LineLayerDefinition;
 import org.vaadin.addons.velocitycomponent.AbstractVelocityJsComponent;
 
 import java.io.IOException;
@@ -161,7 +165,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
      * to load it from a local file instead of from unpkg.com.</p>
      */
     protected void loadMapLibreJs() {
-        JSLoader.loadUnpkg(this, "maplibre-gl", "5.0.0-pre.3", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
+        JSLoader.loadUnpkg(this, "maplibre-gl", "4.7.1", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
     }
 
     public Double getZoomLevel() {
@@ -213,6 +217,57 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 """, Map.of("name", name, "geometry", geometry));
     }
 
+    /**
+     * Adds a new layer only on the client side
+     *
+     * @param name        the name of the new layer
+     * @param source      the source id
+     * @param sourceLayer the source layer
+     * @param linePaint   the paint for the features
+     * @return Layer handle (e.g. to remove the layer)
+     */
+    public SourceLayer addLineLayer(String name, String source, String sourceLayer, LinePaint linePaint) {
+        if(name == null) {
+            name = UUID.randomUUID().toString();
+        }
+        LineLayerDefinition lineLayerDefinition = new LineLayerDefinition(name);
+        lineLayerDefinition.setSourceLayer(sourceLayer);
+        lineLayerDefinition.setSource(source);
+        lineLayerDefinition.setPaint(linePaint);
+        js("""
+            map.addLayer($lineLayer);
+        """, Map.of("lineLayer", lineLayerDefinition));
+        return new SourceLayer(name, this);
+    }
+
+    /**
+     * Adds a new layer only on the client side
+     *
+     * @param layerDefinition the layer definition
+     * @return Layer handle (e.g. to remove the layer)
+     */
+    public SourceLayer addSourceLayer(LayerDefinition layerDefinition) {
+        if(layerDefinition.getId() == null) {
+            layerDefinition.setId(UUID.randomUUID().toString());
+        }
+        js("""
+            map.addLayer($layerDefinition);
+        """, Map.of("layerDefinition", layerDefinition));
+        return new SourceLayer(layerDefinition.getId(), this);
+    }
+
+    /**
+     * Adds a new layer only on the client side
+     *
+     * @param source      the source id
+     * @param sourceLayer the source layer
+     * @param linePaint   the paint for the features
+     * @return Layer handle (e.g. to remove the layer)
+     */
+    public SourceLayer addLineLayer(String source, String sourceLayer, LinePaint linePaint) {
+        return this.addLineLayer(null, source, sourceLayer, linePaint);
+    }
+
     public LineLayer addLineLayer(LineString geometry, LinePaint linePaint) {
         String id = UUID.randomUUID().toString();
         addSource(id, geometry);
@@ -247,43 +302,25 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                       'paint': %s
                     });
                 """.formatted(name, source, sourceLayer, paintJson), Collections.emptyMap());
-        return new Layer(this, name, geom);
-    }
-
-    /**
-     * Adds a new layer only on the client sided
-     *
-     * @param name        the name of the new layer
-     * @param source      the source id
-     * @param sourceLayer the source layer
-     * @param paint       the paint for the features
-     * @return Layer handle (e.g. to remove the layer)
-     */
-    public LineLayer addLineLayer(String name, String source, String sourceLayer, LinePaint paint) {
-        return addLineLayer(name, source, sourceLayer, paint, null);
+        return new GeometryLayer(this, name, geom);
     }
 
     protected LineLayer addLineLayer(String name, String source, String sourceLayer, LinePaint paint, Geometry geom) {
-        if (sourceLayer == null) {
-            sourceLayer = "";
-        } else {
-            sourceLayer = "'source-layer': '%s',".formatted(sourceLayer);
-        }
-        js("""
-                    map.addLayer({
-                      'id': '$name',
-                      'type': 'line',
-                      'source': '$source',
-                       $sourceLayer
-                      'layout': {
-                        'line-join': 'round',
-                        'line-cap': 'round'
-                      },
-                      'paint': $paint
-                    });
-                """, Map.of("name", name, "source", source, "sourceLayer", sourceLayer, "paint", paint));
+        LineLayerDefinition lineLayer = new LineLayerDefinition(name);
+        lineLayer.setSourceLayer(sourceLayer);
+        lineLayer.setSource(source);
+        lineLayer.setPaint(paint);
 
+        js("""
+            map.addLayer($lineLayer);
+        """, Map.of("lineLayer", lineLayer));
         return new LineLayer(this, name, geom);
+    }
+
+    protected void addLayer(String rawStyleJson) {
+        js("""
+            map.addLayer($styleJson);
+            """, Map.of("styleJson", rawStyleJson));
     }
 
     public void removeLayer(Layer layer) {
@@ -305,6 +342,13 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                     map.addSource('$name', $sourceDeclarationJson);
                 """, Map.of("name", name, "sourceDeclarationJson", sourceDeclarationJson));
     }
+
+    public void addSource(String name, AbstractMapSource source) {
+        js("""
+                    map.addSource('$name', $sourceDeclarationJson);
+                """, Map.of("name", name, "sourceDeclarationJson", source));
+    }
+
 
     public Marker addMarker(Point point) {
         return addMarker(point.getX(), point.getY());
@@ -509,8 +553,11 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     public void fitToContent() {
         List<Geometry> geometries = new ArrayList<>();
-        idToLayer.values().forEach(layer ->
-                geometries.add(layer.getGeometry()));
+        idToLayer.values().forEach(layer -> {
+            if(layer instanceof GeometryLayer gm) {
+                geometries.add(gm.getGeometry());
+            }
+        });
         if (geometries.size() > 0) {
             try {
                 Envelope env = geometries.get(0).getEnvelopeInternal();
@@ -619,12 +666,12 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public class MapClickEvent {
         private final Coordinate coordinate;
         private final Coordinate pixelCoordinate;
-        private Layer layer;
+        private GeometryLayer layer;
 
         public MapClickEvent(DomEvent domEvent) {
             if (domEvent.getEventData().hasKey("event.featureId")) {
                 String fId = domEvent.getEventData().getString("event.featureId");
-                this.layer = idToLayer.get(fId);
+                this.layer = (GeometryLayer) idToLayer.get(fId);
             }
             try {
                 LngLatRecord ll = AbstractKebabCasedDto.mapper.readValue(
@@ -646,7 +693,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
             return MapLibre.gf.createPoint(coordinate);
         }
 
-        public Layer getLayer() {
+        public GeometryLayer getLayer() {
             return layer;
         }
 

@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class Marker extends Layer {
+public class Marker extends GeometryLayer {
 
 
     private Popover popover;

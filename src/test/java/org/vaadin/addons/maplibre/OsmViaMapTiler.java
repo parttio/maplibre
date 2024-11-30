@@ -28,6 +28,7 @@ public class OsmViaMapTiler extends VerticalLayout {
                 """));
         try {
             MapLibre map = new MapLibre(new URI("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU"));
+
             map.setHeight("400px");
             map.setWidth("100%");
             map.addMarker(22.300, 60.452)

@@ -3,6 +3,7 @@ package org.vaadin.addons.maplibre;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.locationtech.jts.geom.Geometry;
@@ -19,6 +20,9 @@ import org.vaadin.firitin.components.orderedlayout.VVerticalLayout;
 public class DrawControlView extends VVerticalLayout {
 
     public DrawControlView() {
+
+
+
         MapLibre map = new MapLibre("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU");
         DrawControl drawControl = new DrawControl(map, null);
         addAndExpand(map);

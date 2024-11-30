@@ -1,25 +1,16 @@
 package org.vaadin.addons.maplibre;
 
-import org.locationtech.jts.geom.Geometry;
-
 public class Layer {
     final String id;
     final MapLibre map;
 
-    Geometry geometry;
-
-    Layer(MapLibre map, String id, Geometry geometry) {
-        this.map = map;
+    public Layer(String id, MapLibre map) {
         this.id = id;
-        this.geometry = geometry;
+        this.map = map;
         map.registerLayer(id, this);
     }
 
     public void remove() {
         map.removeLayer(this);
-    }
-
-    public Geometry getGeometry() {
-        return geometry;
     }
 }

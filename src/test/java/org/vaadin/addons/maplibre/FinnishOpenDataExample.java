@@ -11,10 +11,11 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
 import org.apache.commons.io.IOUtils;
 import org.locationtech.jts.geom.GeometryCollection;
-import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.vaadin.addons.maplibre.dto.RgbaColor;
+import org.vaadin.addons.maplibre.dto.VectorMapSource;
 import org.vaadin.firitin.components.RichText;
 import org.vaadin.firitin.components.orderedlayout.VHorizontalLayout;
 
@@ -48,8 +49,10 @@ public class FinnishOpenDataExample extends VerticalLayout {
             setHeight("50vh");
 
             // add Finnish estate data as name source
-            addSource("kiinteisto-avoin", "{'type':'vector', 'url':\"https://avoin-karttakuva.maanmittauslaitos.fi/kiinteisto-avoin/v3/kiinteistojaotus/WGS84_Pseudo-Mercator/tilejson.json?api-key=95065def-f53b-44d6-b429-769c3d504e13\"}");
-            addLineLayer("rajat", "kiinteisto-avoin", "KiinteistorajanSijaintitiedot", new LinePaint("rgba(255,0,0,1)", 2.0), null);
+//            addSource("kiinteisto-avoin", "{'type':'vector', 'url':\"https://avoin-karttakuva.maanmittauslaitos.fi/kiinteisto-avoin/v3/kiinteistojaotus/WGS84_Pseudo-Mercator/tilejson.json?api-key=95065def-f53b-44d6-b429-769c3d504e13\"}");
+
+            addSource("kiinteisto-avoin", new VectorMapSource("https://avoin-karttakuva.maanmittauslaitos.fi/kiinteisto-avoin/v3/kiinteistojaotus/WGS84_Pseudo-Mercator/tilejson.json?api-key=95065def-f53b-44d6-b429-769c3d504e13"));
+            addLineLayer("rajat", "kiinteisto-avoin", "KiinteistorajanSijaintitiedot", new LinePaint(new RgbaColor(255,0,0,1), 2.0), null);
             addFillLayer("alueet", "kiinteisto-avoin", "PalstanSijaintitiedot", new FillPaint("rgba(255,0,0,0.015)", null), null);
 
             // Add a client side click listener to the map, to get the property id

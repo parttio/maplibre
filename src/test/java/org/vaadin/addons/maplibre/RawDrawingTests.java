@@ -9,6 +9,7 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.vaadin.addons.maplibre.dto.Color;
 import org.vaadin.firitin.components.RichText;
 import org.vaadin.firitin.components.button.VButton;
 import org.vaadin.firitin.components.orderedlayout.VHorizontalLayout;
@@ -45,7 +46,7 @@ public class RawDrawingTests extends VVerticalLayout {
                     }).withClickShortcut(Key.KEY_P, KeyModifier.CONTROL),
                     new VButton("Draw linestring (CTRL-L)", e -> {
                         drawLineString().thenAccept(geom -> {
-                            map.addLineLayer(geom, new LinePaint("blue", 1.0));
+                            map.addLineLayer(geom, new LinePaint(Color.BLUE, 1.0));
                         });
                     }).withClickShortcut(Key.KEY_L, KeyModifier.CONTROL))
             );

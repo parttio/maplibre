@@ -11,6 +11,7 @@ import io.jenetics.jpx.WayPoint;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
+import org.vaadin.addons.maplibre.dto.Color;
 import org.vaadin.firitin.components.RichText;
 
 import java.net.URI;
@@ -88,7 +89,15 @@ public class GpxAnimation extends VerticalLayout {
                     marker.setPoint(gf.createPoint(new Coordinate(current.getLongitude().doubleValue(), current.getLatitude().doubleValue())));
                     if(tail == null) {
                         LineString lineString = gf.createLineString(tailToDraw);
-                        tail = map.addLineLayer(lineString, new LinePaint("#00ff00", 2.0));
+                        var greenTranslucent = new LinePaint(Color.hex("#00ff00"), 2.0);
+                        // Testing the supplemental JSON API here, this gets merged
+                        // to the LinePaint DTO
+                        greenTranslucent.setSupplementalJson("""
+                            {
+                                "line-opacity": 0.4
+                            }
+                        """);
+                        tail = map.addLineLayer(lineString, greenTranslucent);
                     } else {
                         tail.addCoordinates(0, tailToDraw);
                     }
