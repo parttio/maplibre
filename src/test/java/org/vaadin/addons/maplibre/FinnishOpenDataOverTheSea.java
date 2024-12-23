@@ -3,8 +3,6 @@ package org.vaadin.addons.maplibre;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.platform.commons.util.CollectionUtils;
 import org.vaadin.addons.maplibre.dto.CircleLayerDefinition;
 import org.vaadin.addons.maplibre.dto.CirclePaint;
 import org.vaadin.addons.maplibre.dto.FillLayerDefinition;
@@ -110,7 +108,7 @@ public class FinnishOpenDataOverTheSea extends VerticalLayout {
 
                 setLayout(new SymbolLayout() {{
                     setSymbolPlacement(SymbolPlacement.lineCenter);
-                    setTextField("{VALDCO}");
+                    setTextField("{VALDCO} ");
                     setTextFont("Open Sans Semibold");
                     setTextSize(Interpolate
                             .exponential(1.4)
