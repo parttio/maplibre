@@ -29,6 +29,14 @@ public class BasicMap extends VerticalLayout {
                 map.setStyle("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU");
             }));
 
+            add(new Button("globe projection", e-> {
+                map.js("""
+                    map.setProjection({
+                        type: 'globe'
+                    });
+                    """);
+            }));
+
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
