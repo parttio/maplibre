@@ -349,6 +349,11 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                 """, Map.of("name", name, "sourceDeclarationJson", source));
     }
 
+    public void addSprite(String name, String spriteUrl) {
+        js("""
+            map.addSprite("meri", "https://virit.in/maastokartta/merisprite");
+        """);
+    }
 
     public Marker addMarker(Point point) {
         return addMarker(point.getX(), point.getY());
