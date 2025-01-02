@@ -30,6 +30,7 @@ import org.vaadin.addons.maplibre.dto.AbstractMapSource;
 import org.vaadin.addons.maplibre.dto.FlyToOptions;
 import org.vaadin.addons.maplibre.dto.LayerDefinition;
 import org.vaadin.addons.maplibre.dto.LineLayerDefinition;
+import org.vaadin.addons.maplibre.dto.Projection;
 import org.vaadin.addons.velocitycomponent.AbstractVelocityJsComponent;
 
 import java.io.IOException;
@@ -353,6 +354,12 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         js("""
             map.addSprite("meri", "https://virit.in/maastokartta/merisprite");
         """);
+    }
+
+    public void setProjection(Projection projection) {
+        js("""
+            map.setProjection($projection);
+        """, Map.of("projection", projection));
     }
 
     public Marker addMarker(Point point) {

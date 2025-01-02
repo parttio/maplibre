@@ -2,7 +2,9 @@ package org.vaadin.addons.maplibre;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.router.Route;
+import org.vaadin.addons.maplibre.dto.Projection;
 import org.vaadin.firitin.components.RichText;
 
 import java.net.URI;
@@ -29,13 +31,17 @@ public class BasicMap extends VerticalLayout {
                 map.setStyle("https://api.maptiler.com/maps/streets/style.json?key=G5n7stvZjomhyaVYP0qU");
             }));
 
-            add(new Button("globe projection", e-> {
-                map.js("""
-                    map.setProjection({
-                        type: 'globe'
-                    });
-                    """);
-            }));
+            add(new RadioButtonGroup<>(){{
+                setItems("Mercator", "Globe");
+                setValue("Mercator");
+                addValueChangeListener(e-> {
+                    if(e.getValue().equals("Mercator")) {
+                        map.setProjection(Projection.MERCATOR);
+                    } else {
+                        map.setProjection(Projection.GLOBE);
+                    }
+                });
+            }});
 
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
