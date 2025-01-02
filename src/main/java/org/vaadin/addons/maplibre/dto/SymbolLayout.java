@@ -15,6 +15,7 @@ public class SymbolLayout extends AbstractKebabCasedDto {
     private Number iconSize;
     private Object iconRotate;
     private TextRotationAlignment iconRotationAlignment;
+    private Boolean iconAllowOverlap;
 
     public TextRotationAlignment getIconRotationAlignment() {
         return iconRotationAlignment;
@@ -106,6 +107,14 @@ public class SymbolLayout extends AbstractKebabCasedDto {
 
     public void setIconImage(String iconImage) {
         this.iconImage = iconImage;
+    }
+
+    public Boolean getIconAllowOverlap() {
+        return iconAllowOverlap;
+    }
+
+    public void setIconAllowOverlap(Boolean iconAllowOverlap) {
+        this.iconAllowOverlap = iconAllowOverlap;
     }
 
     /**
