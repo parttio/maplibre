@@ -7,6 +7,7 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.DomEvent;
@@ -166,7 +167,10 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
      * to load it from a local file instead of from unpkg.com.</p>
      */
     protected void loadMapLibreJs() {
-        JSLoader.loadUnpkg(this, "maplibre-gl", "5.0.0", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
+        UI current = UI.getCurrent();
+        if(current != null) {
+            JSLoader.loadUnpkg(this, "maplibre-gl", "5.0.1", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
+        }
     }
 
     public Double getZoomLevel() {
@@ -352,8 +356,8 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     public void addSprite(String name, String spriteUrl) {
         js("""
-            map.addSprite("meri", "https://virit.in/maastokartta/merisprite");
-        """);
+            map.addSprite("$name", "$spriteUrl");
+        """, Map.of("name", name, "spriteUrl", spriteUrl));
     }
 
     public void setProjection(Projection projection) {

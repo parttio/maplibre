@@ -20,4 +20,5 @@ public class PropertyEquals extends Case {
     public static PropertyEquals[] anyValue(String propertyName, Object result, List<?> matchedValues) {
         return matchedValues.stream().map(value -> new PropertyEquals(propertyName, value, result)).toArray(PropertyEquals[]::new);
     }
+
 }

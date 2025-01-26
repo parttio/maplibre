@@ -1,5 +1,7 @@
 package org.vaadin.addons.maplibre.dto.expressions;
 
+import org.vaadin.addons.maplibre.dto.Color;
+
 public class ZoomStep {
     private final int zoom;
     private final Object value;
@@ -15,6 +17,11 @@ public class ZoomStep {
     }
 
     public ZoomStep(int zoom, int value) {
+        this.zoom = zoom;
+        this.value = value;
+    }
+
+    public ZoomStep(int zoom, Color value) {
         this.zoom = zoom;
         this.value = value;
     }

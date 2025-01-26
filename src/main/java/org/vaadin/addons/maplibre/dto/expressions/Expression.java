@@ -6,5 +6,6 @@ package org.vaadin.addons.maplibre.dto.expressions;
  * Specification: https://maplibre.org/maplibre-style-spec/expressions/
  *
  */
+// TODO add typing, e.g. Expression<Boolean> or Expression<Double>
 public interface Expression {
 }

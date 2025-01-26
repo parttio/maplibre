@@ -10,7 +10,7 @@
     <url>https://github.com/parttio/maplibre</url>
 
     <properties>
-        <vaadin.version>24.5.2</vaadin.version>
+        <vaadin.version>24.6.2</vaadin.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

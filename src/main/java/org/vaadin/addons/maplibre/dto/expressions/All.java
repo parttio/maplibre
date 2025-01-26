@@ -11,11 +11,11 @@ public class All extends AbstractDto implements Expression {
     public All() {
     }
 
-    public All(Matcher... predicates) {
+    public All(Expression... predicates) {
         this.predicates = List.of(predicates);
     }
 
-    private List<Matcher> predicates = new ArrayList<>();
+    private List<Expression> predicates = new ArrayList<>();
 
     @JsonValue
     private List<Object> expression() {

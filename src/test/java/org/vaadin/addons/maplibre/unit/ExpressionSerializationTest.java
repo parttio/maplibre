@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.vaadin.addons.maplibre.dto.expressions.All;
 import org.vaadin.addons.maplibre.dto.expressions.CaseExpression;
 import org.vaadin.addons.maplibre.dto.expressions.Equals;
+import org.vaadin.addons.maplibre.dto.expressions.Expression;
 import org.vaadin.addons.maplibre.dto.expressions.Interpolate;
 import org.vaadin.addons.maplibre.dto.expressions.NotEquals;
 import org.vaadin.addons.maplibre.dto.expressions.PropertyEquals;

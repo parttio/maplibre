@@ -32,4 +32,5 @@ public class SymbolPaint extends AbstractKebabCasedDto {
     public void setTextHaloWidth(Integer textHaloWidth) {
         this.textHaloWidth = textHaloWidth;
     }
+
 }

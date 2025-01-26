@@ -1,6 +1,7 @@
 package org.vaadin.addons.maplibre;
 
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import org.vaadin.addons.maplibre.dto.CircleLayerDefinition;
@@ -52,6 +53,10 @@ public class FinnishOpenDataOverTheSea extends VerticalLayout {
             setCenter(22.2462, 60.1755);
             setZoomLevel(11);
             setHeight("50vh");
+
+            this.addMoveEndListener(event -> {
+                Notification.show("Map moved to " + getCenter() + " zoom level " + getZoomLevel());
+            });
 
             // This raw Vector Tile sources contains:
             // - Depth contours. areas and soundings by Traficom

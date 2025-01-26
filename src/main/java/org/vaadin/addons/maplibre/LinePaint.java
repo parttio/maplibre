@@ -2,11 +2,24 @@ package org.vaadin.addons.maplibre;
 
 import org.vaadin.addons.maplibre.dto.AbstractKebabCasedDto;
 import org.vaadin.addons.maplibre.dto.Color;
+import org.vaadin.addons.maplibre.dto.expressions.Expression;
 
 public class LinePaint extends AbstractKebabCasedDto {
 
-    Color lineColor;
-    Double lineWidth;
+    Object lineColor;
+    Object lineWidth;
+    private int[] lineDasharray;
+
+    public void setLineDasharray(int... dasharray) {
+        this.lineDasharray = dasharray;
+    }
+
+    public int[] getLineDasharray() {
+        return lineDasharray;
+    }
+
+    public LinePaint() {
+    }
 
     public LinePaint(Color lineColor) {
         this.lineColor = lineColor;
@@ -17,11 +30,28 @@ public class LinePaint extends AbstractKebabCasedDto {
         this.lineWidth = lineWidth;
     }
 
-    public Double getLineWidth() {
+    public Object getLineWidth() {
         return lineWidth;
     }
 
-    public Color getLineColor() {
+    public Object getLineColor() {
         return lineColor;
     }
+
+    public void setLineColor(Color color) {
+        this.lineColor = color;
+    }
+
+    public void setLineColor(Expression color) {
+        this.lineColor = color;
+    }
+
+    public void setLineWidth(Expression lineWidth) {
+        this.lineWidth = lineWidth;
+    }
+
+    public void setLineWidth(Double lineWidth) {
+        this.lineWidth = lineWidth;
+    }
+
 }
