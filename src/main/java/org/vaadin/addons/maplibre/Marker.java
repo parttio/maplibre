@@ -65,6 +65,9 @@ public class Marker extends GeometryLayer {
                     popover.setFor(id);
                 }
             });
+        } else {
+            popover.removeAll();
+            popover.add(contentSupplier.get());
         }
         return popover;
     }
