@@ -56,7 +56,7 @@ public class Marker extends GeometryLayer {
             popover = new Popover();
             popover.addThemeVariants(PopoverVariant.ARROW);
             addClickListener(() -> {
-                openPopover(contentSupplier);
+                openPopover(popoverContentSupplier);
             });
             popover.addOpenedChangeListener(e -> {
                 if (!e.isOpened() && e.isFromClient()) {
@@ -67,7 +67,7 @@ public class Marker extends GeometryLayer {
             });
         } else {
             popover.removeAll();
-            popover.add(contentSupplier.get());
+            popover.add(popoverContentSupplier.get());
         }
         return popover;
     }
