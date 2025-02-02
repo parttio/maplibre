@@ -174,6 +174,19 @@ public class SymbolLayout extends AbstractKebabCasedDto {
     }
 
     /**
+     * https://maplibre.org/maplibre-style-spec/layers/#icon-rotation-alignment
+     */
+    public enum RotationAlignment {
+        map, viewport, auto;
+
+        @Override
+        @JsonValue
+        public String toString() {
+            return camelToKebabCase(name());
+        }
+    }
+
+    /**
      * https://maplibre.org/maplibre-style-spec/layers/#layout-symbol-text-transform
      */
     public enum TextTransform {none, uppercase, lowercase}

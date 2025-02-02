@@ -231,6 +231,7 @@ public class Maastokartta extends MapLibre {
         }});
 
         addSourceLayer(new BasicLine("valtakunnanraja"+OVERALL_POSTFIX, "#4D00B3") {{getPaint().setLineWidth(3.0);}});
+
     }
 
     private void basicTerrainMapAreasFromMMLStyles() {
@@ -503,6 +504,9 @@ public class Maastokartta extends MapLibre {
             setMinZoom(13);
         }});
         addSourceLayer(new Kaislikko());
+
+        addSourceLayer(new TekstiKunnannimi());
+        addSourceLayer(new TekstiMajorCity());
 
     }
 

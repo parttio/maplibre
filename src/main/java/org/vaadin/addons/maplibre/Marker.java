@@ -7,6 +7,7 @@ import com.vaadin.flow.function.SerializableSupplier;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.vaadin.addons.maplibre.dto.SymbolLayout;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class Marker extends GeometryLayer {
     private List<String> listeners;
     private SerializableSupplier<Component> popoverContentSupplier;
 
-    Marker(MapLibre map, String id, Coordinate coordinate) {
+    protected Marker(MapLibre map, String id, Coordinate coordinate) {
         super(map, id, new GeometryFactory().createPoint(coordinate));
     }
 
@@ -167,6 +168,13 @@ public class Marker extends GeometryLayer {
                     const marker = component.markers['$id'];
                     marker.setRotation($rotation);
                 """, Map.of("id", id, "rotation", rotationInDegrees));
+    }
+
+    public void setRotationAlignment(SymbolLayout.RotationAlignment rotationAlignment) {
+        map.js("""
+                    const marker = component.markers['$id'];
+                    marker.setRotationAlignment('$rotationAlignment');
+                """, Map.of("id", id, "rotationAlignment", rotationAlignment.toString()));
     }
 
     public interface DragEndListener {

@@ -62,7 +62,7 @@ public class FinnishOpenDataOverTheSeaClean extends VerticalLayout {
             // Packaged together with GDAL & Tippecanoe
             // The service URL is open, but runs on a tiny server -> don't use it for anything else but testing
             // TODO re-package the data so that boyes, etc. are not dropped on smaller zoom levels
-            addSource(MERIDATA, new VectorMapSource("https://fvtns.dokku1.parttio.org/services/meridata/"));
+            addSource(MERIDATA, new VectorMapSource("https://fvtns.dokku1.parttio.org/services/meridata2/"));
 
             // Stones, rocks, etc. by MML
             //addSource("mml", new VectorMapSource("https://avoin-karttakuva.maanmittauslaitos.fi/vectortiles/tilejson/taustakartta/1.0.0/taustakartta/default/v20/WGS84_Pseudo-Mercator/tilejson.json?api-key=8b7770cf-8589-4ebe-acbb-ab8876b684ce"));
