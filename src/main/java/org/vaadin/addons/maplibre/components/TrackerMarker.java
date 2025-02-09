@@ -79,7 +79,7 @@ public class TrackerMarker {
         points.add(trackPoint);
         int removed = 0;
         if(maxAge != null) {
-            while(points.get(0).time().plus(maxAge).isBefore(Instant.now())) {
+            while(!points.isEmpty() && points.get(0).time().plus(maxAge).isBefore(Instant.now())) {
                 points.remove(0);
                 removed++;
             }
