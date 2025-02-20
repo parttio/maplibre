@@ -147,7 +147,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     protected void onAttach(AttachEvent attachEvent) {
         init();
         if (detached) {
-            throw new IllegalStateException("Re-attaching old map not currently supported!");
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Re-attaching old map not currently supported. If this is not a re-sync request by Flow, the map might be non-functional.");
         }
         super.onAttach(attachEvent);
     }
