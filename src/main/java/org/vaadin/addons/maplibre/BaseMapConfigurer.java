@@ -6,7 +6,7 @@ package org.vaadin.addons.maplibre;
 public interface BaseMapConfigurer {
 
     /**
-     * @return the base map style as String, URI or InputStream
+     * @param map the MapLibre instance to configure
      */
     void configure(MapLibre map);
 
