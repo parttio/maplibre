@@ -44,7 +44,7 @@ public class OsmViaMapTiler extends VerticalLayout {
             map.addMapClickListener(e -> {
                 String str = "Clicked on Map: " + e.getPoint().toString();
                 if (e.getLayer() != null) {
-                    str += " Layer : " + e.getLayer().getGeometry().toText();
+                    str += " Layer : " + e.getLayer();
                 }
                 Notification.show(str);
             });

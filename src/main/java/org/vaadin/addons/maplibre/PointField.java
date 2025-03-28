@@ -1,11 +1,13 @@
 package org.vaadin.addons.maplibre;
 
+import com.vaadin.flow.function.SerializableConsumer;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
 
 public class PointField extends AbstractFeatureField<Point> implements Marker.DragEndListener {
     private Point point;
     private Marker marker;
+    private SerializableConsumer<Marker> markerFormatter;
 
     public PointField(String label) {
         this();
@@ -42,12 +44,19 @@ public class PointField extends AbstractFeatureField<Point> implements Marker.Dr
         } else {
             // edit existing
             if(marker == null) {
-                marker = getMap().addMarker(point)
-                        .addDragEndListener(this);
+                createMarker(point);
             } else {
                 marker.setPoint(point);
             }
             getMap().setCenter(point.getX(), point.getY());
+        }
+    }
+
+    private void createMarker(Point point) {
+        marker = getMap().addMarker(point)
+                .addDragEndListener(this);
+        if(markerFormatter != null) {
+            markerFormatter.accept(marker);
         }
     }
 
@@ -58,8 +67,7 @@ public class PointField extends AbstractFeatureField<Point> implements Marker.Dr
             Coordinate coordinate = event.getCoordinate();
             assignPointFromCoordinate(coordinate);
             if(marker == null) {
-                marker = getMap().addMarker(point)
-                        .addDragEndListener(this);
+                createMarker(point);
             } else  {
                 marker.setPoint(point);
             }
@@ -76,5 +84,12 @@ public class PointField extends AbstractFeatureField<Point> implements Marker.Dr
     public void dragEnd(Coordinate coordinate) {
         assignPointFromCoordinate(coordinate);
         updateValue();
+    }
+
+    public void setMarkerFormatter(SerializableConsumer<Marker> markerFormatter) {
+        this.markerFormatter = markerFormatter;
+        if(marker != null) {
+            markerFormatter.accept(marker);
+        }
     }
 }

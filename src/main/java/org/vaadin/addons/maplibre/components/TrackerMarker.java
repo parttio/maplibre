@@ -24,11 +24,16 @@ import java.util.LinkedList;
 @Deprecated(forRemoval = false)
 public class TrackerMarker {
 
+    protected String textPosX = "50%";
+    protected String textPosY = "60%";
+    protected String character = "";
+
     public static String svgArrowTemplate = """
     <svg width="30px" height="30px" viewBox="0 0 24 24" fill="none">
       <path
          d="M 3.16496,19.5025 10.5275,2.99281 c 1.518289,-2.88445928 1.511073,-2.88445928 2.945,0 L 20.835,19.5025 c 2.312172,4.237686 -0.8141,3.0474 -2.2019,2.3065 l -5.9037,-3.152 c -0.4592,-0.2452 -0.9996,-0.2452 -1.4588,0 L 5.36689,21.809 C 3.97914,22.5499 0.93718072,23.908912 3.16496,19.5025 Z"
          style="%s" />
+        <text style="font-size: 10px;fill:white; font-weight:bold;" x="%s" y="%s" dominant-baseline="middle" text-anchor="middle">%s</text>
     </svg>
     """;
 
@@ -48,6 +53,10 @@ public class TrackerMarker {
 
     public TrackerMarker(MapLibre map) {
         this.map = map;
+    }
+
+    public void reset() {
+        points.clear();
     }
 
     public void addPoint(double lon, double lat) {
@@ -105,10 +114,16 @@ public class TrackerMarker {
             // TODO make the marker bit transparent to indicate that it's old
         }
         maintainTail(removed, coordinate);
+        System.out.println("TM DEBUG: " + points.size() + " points, removed " + removed);
     }
 
     protected void styleMarker() {
-        marker.setHtml(svgArrowTemplate.formatted(getDefaultSvgMarkerCss()));
+        marker.setHtml(svgArrowTemplate.formatted(
+                getDefaultSvgMarkerCss(),
+                textPosX,
+                textPosY,
+                character
+        ));
         marker.setOffset(0,0);
     }
 
@@ -158,5 +173,12 @@ public class TrackerMarker {
         if(marker != null) {
             marker.setColor(color);
         }
+    }
+
+    /**
+     * @param character a single character presented within the marker symbol
+     */
+    public void setCharacter(Character character) {
+        this.character = character.toString();
     }
 }

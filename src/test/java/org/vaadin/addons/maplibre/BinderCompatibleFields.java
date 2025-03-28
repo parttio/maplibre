@@ -4,7 +4,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Pre;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
@@ -34,7 +33,7 @@ public class BinderCompatibleFields extends VVerticalLayout {
     public BinderCompatibleFields() {
 
         // Typically you should set this in some configuration bean
-        VaadinService.getCurrent().getContext().setAttribute(MapLibreBaseMapProvider.class, () -> basemapStyle);
+        VaadinService.getCurrent().getContext().setAttribute(BaseMapConfigurer.class, map -> map.initStyle(basemapStyle));
 
         configure(polygon);
         configure(line);

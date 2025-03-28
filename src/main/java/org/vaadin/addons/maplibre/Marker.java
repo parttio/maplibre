@@ -15,6 +15,19 @@ import java.util.Map;
 
 public class Marker extends GeometryLayer {
 
+    /*
+            PositionAnchor: "center" | "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right"
+         */
+    enum PositionAnchor {
+        CENTER, TOP, BOTTOM, LEFT, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT;
+
+        @Override
+        public String toString() {
+            return this.name().toLowerCase().replace("_", "-");
+        }
+
+    }
+
 
     private Popover popover;
     private List<String> listeners;
@@ -158,7 +171,6 @@ public class Marker extends GeometryLayer {
     public void setOffset(double x, double y) {
         map.js("""
                     const marker = component.markers['$id'];
-                    debugger;
                     marker.setOffset([$x, $y]);
                 """, Map.of("id", id, "x", x, "y", y));
     }
@@ -175,6 +187,13 @@ public class Marker extends GeometryLayer {
                     const marker = component.markers['$id'];
                     marker.setRotationAlignment('$rotationAlignment');
                 """, Map.of("id", id, "rotationAlignment", rotationAlignment.toString()));
+    }
+
+    public void setAnchor(PositionAnchor positionAnchor) {
+        map.js("""
+                    const marker = component.markers['$id'];
+                    marker._anchor = '$positionAnchor';
+                """, Map.of("id", id, "positionAnchor", positionAnchor.toString()));
     }
 
     public interface DragEndListener {
