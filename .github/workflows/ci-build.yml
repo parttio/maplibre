@@ -19,4 +19,4 @@ jobs:
         with:
           node-version: 18
       - name: Build with Maven
-        run: mvn -Pit,release --batch-mode --update-snapshots verify
+        run: mvn -Pit --batch-mode --update-snapshots verify javadoc:javadoc
