@@ -202,7 +202,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     protected void loadMapLibreJs() {
         UI current = UI.getCurrent();
         if(current != null) {
-            JSLoader.loadUnpkg(this, "maplibre-gl", "5.3.0", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
+            JSLoader.loadUnpkg(this, "maplibre-gl", "5.4.0", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
         }
     }
 
