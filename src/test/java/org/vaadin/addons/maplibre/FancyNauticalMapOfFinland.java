@@ -46,7 +46,6 @@ public class FancyNauticalMapOfFinland extends Maastokartta {
         //addSource(MERIDATA, new VectorMapSource("https://fvtns.dokku1.parttio.org/services/meridata/"));
         addSource(MERIDATA, new VectorMapSource("https://fvtns.dokku1.parttio.org/services/meridata2"));
 
-        addSprite("topo", "https://virit.in/maastokartta/toposprite");
 
         addSourceLayer(new FillLayerDefinition() {{
             setId("shallow"); // This is optional, if not set, the ID is generated

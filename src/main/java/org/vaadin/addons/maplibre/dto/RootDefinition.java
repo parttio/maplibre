@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class RootDefinition extends AbstractKebabCasedDto {
 
@@ -11,7 +12,9 @@ public class RootDefinition extends AbstractKebabCasedDto {
 
     private String name;
 
-    private String sprite;
+    record SpriteDef(String id, String url) {}
+
+    private List<SpriteDef> sprite;
 
     private String glyphs;
 
@@ -33,12 +36,8 @@ public class RootDefinition extends AbstractKebabCasedDto {
         this.name = name;
     }
 
-    public String getSprite() {
+    public List<SpriteDef> getSprite() {
         return sprite;
-    }
-
-    public void setSprite(String sprite) {
-        this.sprite = sprite;
     }
 
     public String getGlyphs() {
@@ -71,5 +70,25 @@ public class RootDefinition extends AbstractKebabCasedDto {
 
     public void setProjection(Projection projection) {
         this.projection = projection;
+    }
+
+    public void addSource(String id, AbstractMapSource source) {
+        // TODO consider putting id to MapSource, although it is not that way in MapLibre itself
+        getSources().put(id, source);
+    }
+
+    public void addSprite(String id, String url) {
+        if(sprite == null) {
+            sprite = new ArrayList<>();
+        }
+        sprite.add(new SpriteDef(id, url));
+    }
+
+    public void addSourceLayer(LayerDefinition layerDefinition) {
+        String id = layerDefinition.getId();
+        if(id == null) {
+            layerDefinition.setId(UUID.randomUUID().toString());
+        }
+        layers.add(layerDefinition);
     }
 }
