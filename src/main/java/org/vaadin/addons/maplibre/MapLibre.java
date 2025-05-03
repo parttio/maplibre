@@ -28,7 +28,8 @@ import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.parttio.vaadinjsloader.JSLoader;
 import org.vaadin.addons.maplibre.dto.AbstractKebabCasedDto;
 import org.vaadin.addons.maplibre.dto.AbstractMapSource;
-import org.vaadin.addons.maplibre.dto.FlyToOptions;
+import org.vaadin.addons.maplibre.dto.AnimationOptions;
+import org.vaadin.addons.maplibre.dto.FitBoundsOptions;
 import org.vaadin.addons.maplibre.dto.LayerDefinition;
 import org.vaadin.addons.maplibre.dto.LineLayerDefinition;
 import org.vaadin.addons.maplibre.dto.Projection;
@@ -443,7 +444,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         js(envelope);
     }
 
-    public void flyTo(FlyToOptions flyToOptions) {
+    public void flyTo(AnimationOptions flyToOptions) {
         js("map.flyTo(%s)".formatted(flyToOptions));
     }
 
@@ -548,15 +549,23 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     }
 
     public void fitBounds(Geometry geometry) {
+        this.fitBounds(geometry, new FitBoundsOptions(){{
+            // Not sure why this used to be a default, TODO consider removing.
+            setPadding(20);
+        }});
+    }
+
+    public void fitBounds(Geometry geometry, FitBoundsOptions options) {
         String geojson = new GeoJsonWriter().write(geometry.getEnvelope().getBoundary());
         js("""
                 const bbox = JSON.parse('$bbox');
                 const b = new maplibregl.LngLatBounds(bbox.coordinates[0],bbox.coordinates[1]);
                 bbox.coordinates.forEach(c => {
-                    b.extend([c[0],c[1]]);                    
+                    b.extend([c[0],c[1]]);
                 });
-                map.fitBounds(b, {padding: 20});
-                """, Map.of("bbox", geojson));
+                const options = $options;
+                map.fitBounds(b, options);
+                """, Map.of("bbox", geojson, "options", options));
     }
 
     public void addMoveEndListener(MoveEndListener listener) {
