@@ -1,6 +1,7 @@
 package org.vaadin.addons.maplibre.finnishterrainmap;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.router.Route;
 import org.vaadin.addons.maplibre.LinePaint;
 import org.vaadin.addons.maplibre.MapLibre;
@@ -25,15 +26,30 @@ import java.io.InputStream;
 @Route
 public class Maastokartta extends MapLibre {
 
+    public static final String defAsJson = new MaastokarttaDef().toString();
     public static int OVERALL_BREAKPOINT = 11;
     public static String OVERALL_POSTFIX = "-overall";
     public static int ROAD_OVERALL_BREAKPOINT = OVERALL_BREAKPOINT;
-
     //public static Expression WIDTH_SMALL = 0;
     public static int WIDTH_MEDIUM = 1;
     public static int WIDTH_LARGE = 2;
 
-    public static class LocalMapDef extends RootDefinition {
+    public Maastokartta() {
+        // Static basemaps should be static in actual usage, e.g. like on following line, building dynamically here
+        // for more agile development with JRebel and friends
+        // initStyle(defAsJson);
+        super(new MaastokarttaDef().str());
+
+        setCenter(22.1, 60.2);
+        setZoomLevel(10);
+
+//        addLineLayer("kk", "korkeuskayrafgb", new LinePaint(new RgbaColor(0,0,0,1.0), 2.0));
+        addMoveEndListener(e -> {
+            VNotification.show("ZL:" + e.getZoomLevel());
+        });
+    }
+
+    public static class MaastokarttaDef extends RootDefinition {
         {
             setName("Maastokartta");
             setGlyphs("https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf");
@@ -72,7 +88,7 @@ public class Maastokartta extends MapLibre {
             addSourceLayer(new LineLayerDefinition("kk100") {{
                 setSource("kk100");
                 setSourceLayer("korkeuskayra100");
-                setPaint(new LinePaint(new RgbaColor(164,50,50,0.5)) {{
+                setPaint(new LinePaint(new RgbaColor(164, 50, 50, 0.5)) {{
                     setLineWidth(Interpolate.linear().zoom(new ZoomStep(6, 0.001), new ZoomStep(8, .5)));
                     setMinZoom(6);
                 }});
@@ -84,9 +100,9 @@ public class Maastokartta extends MapLibre {
                 setSourceLayer("korkeuskayra20");
                 setPaint(new LinePaint() {{
                     setLineColor(Interpolate.linear().zoom(
-                            new ZoomStep(OVERALL_BREAKPOINT + -2, new RgbaColor(164,50,50,0.0)),
-                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbaColor(164,50,50,0.5)),
-                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbaColor(164,50,50,.0))));
+                            new ZoomStep(OVERALL_BREAKPOINT + -2, new RgbaColor(164, 50, 50, 0.0)),
+                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbaColor(164, 50, 50, 0.5)),
+                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbaColor(164, 50, 50, .0))));
 
                     setLineWidth(Interpolate.linear().zoom(new ZoomStep(6, 0.001), new ZoomStep(11, 1.0)));
                 }});
@@ -100,15 +116,15 @@ public class Maastokartta extends MapLibre {
                 setSourceLayer("korkeuskayra");
                 setPaint(new LinePaint() {{
                     setLineColor(Interpolate.linear().zoom(
-                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbaColor(164,50,50,0.0)),
-                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbaColor(164,50,50,1.0))));
+                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbaColor(164, 50, 50, 0.0)),
+                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbaColor(164, 50, 50, 1.0))));
                     setLineWidth(Interpolate.linear().zoom(new ZoomStep(10, 0.05), new ZoomStep(16, 2.0)));
                 }});
                 setSupplementalJson("""
-            {
-            "filter": ["==", ["%", ["get","korkeusarvo"], 5000], 0]
-            }
-            """);
+                        {
+                        "filter": ["==", ["%", ["get","korkeusarvo"], 5000], 0]
+                        }
+                        """);
             }});
             addSourceLayer(new LineLayerDefinition("korkeuskayra") {{
                 setSource("mtk");
@@ -117,16 +133,16 @@ public class Maastokartta extends MapLibre {
                 final double fraction = 0.6;
                 setPaint(new LinePaint() {{
                     setLineColor(Interpolate.linear().zoom(
-                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbaColor(164,50,50,0.0)),
-                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbaColor(164,50,50,1.0))));
-                    setLineWidth(Interpolate.linear().zoom(new ZoomStep(10, 0.05*fraction), new ZoomStep(16, 2*fraction)));
+                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbaColor(164, 50, 50, 0.0)),
+                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbaColor(164, 50, 50, 1.0))));
+                    setLineWidth(Interpolate.linear().zoom(new ZoomStep(10, 0.05 * fraction), new ZoomStep(16, 2 * fraction)));
                     //setLineDasharray(4,2);
                 }});
                 setSupplementalJson("""
-            {
-            "filter": ["==", ["%", ["get","korkeusarvo"], 5000],2500]
-            }
-            """);
+                        {
+                        "filter": ["==", ["%", ["get","korkeusarvo"], 5000],2500]
+                        }
+                        """);
             }});
 
 
@@ -147,11 +163,23 @@ public class Maastokartta extends MapLibre {
                 //TODO support proper colors new RgbaColor(0,0,255,0.5)
                 // In nautical map, dotted line is used to indicate shallow water 🤔
                 setPaint(new LinePaint() {{
-                    setLineColor(new RgbaColor(0,0,0,0.5));
+                    setLineColor(new RgbaColor(0, 0, 0, 0.5));
                     setLineWidth(1.0);
-                    setLineDasharray(1,1);
+                    setLineDasharray(1, 1);
                 }});
             }});
+
+            addSourceLayer(new TekstiKunnannimi());
+            addSourceLayer(new TekstiPaikannimi());
+            addSourceLayer(new TekstiMajorCity());
+
+            try {
+                System.out.println(
+                        mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
+                );
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
 
         }
 
@@ -162,7 +190,7 @@ public class Maastokartta extends MapLibre {
         }
 
         private void smallZoomLevelsSpecialRules() {
-            addSourceLayer(new WaterArea("vesi"+OVERALL_POSTFIX) {{
+            addSourceLayer(new WaterArea("vesi" + OVERALL_POSTFIX) {{
                 // bit darker color for simplified overall water areas, "terrain map standard" is quite light for small levels
                 // TODO make it expression so that it is the standard when changing to "full details".
                 Interpolate color = Interpolate.linear().zoom(
@@ -172,54 +200,56 @@ public class Maastokartta extends MapLibre {
                 getPaint().setFillColor(color);
                 setMaxZoom(OVERALL_BREAKPOINT);
             }});
-            addSourceLayer(new BasicFill("maatalousmaa"+OVERALL_POSTFIX, "#FFD980") {{
+            addSourceLayer(new BasicFill("maatalousmaa" + OVERALL_POSTFIX, "#FFD980") {{
                 setMaxZoom(OVERALL_BREAKPOINT);
             }});
 
-            addSourceLayer(new BasicFill("taajaanrakennettualue"+OVERALL_POSTFIX, "#b2977e") {{
+            addSourceLayer(new BasicFill("taajaanrakennettualue" + OVERALL_POSTFIX, "#b2977e") {{
                 setMaxZoom(OVERALL_BREAKPOINT);
             }});
 
             addSourceLayer(new Tie1A1BReuna() {{
                 setId("tieviiva-numeroidut-1r");
-                setSourceLayer("tieviiva-numeroidut"+OVERALL_POSTFIX);
+                setSourceLayer("tieviiva-numeroidut" + OVERALL_POSTFIX);
                 setMinZoom(0);
                 setMaxZoom(ROAD_OVERALL_BREAKPOINT);
             }});
             addSourceLayer(new Tie2A2BReuna() {{
                 setId("tieviiva-numeroidut-2r");
-                setSourceLayer("tieviiva-numeroidut"+OVERALL_POSTFIX);
+                setSourceLayer("tieviiva-numeroidut" + OVERALL_POSTFIX);
                 setMinZoom(6);
-                setMaxZoom(ROAD_OVERALL_BREAKPOINT-1);
+                setMaxZoom(ROAD_OVERALL_BREAKPOINT - 1);
             }});
             addSourceLayer(new Tie3A3BReuna() {{
                 setId("tieviiva-numeroidut-3r");
-                setSourceLayer("tieviiva-numeroidut"+OVERALL_POSTFIX);
+                setSourceLayer("tieviiva-numeroidut" + OVERALL_POSTFIX);
                 setMinZoom(9);
                 setMaxZoom(ROAD_OVERALL_BREAKPOINT);
             }});
 
             addSourceLayer(new Tie1A1BFill() {{
                 setId("tieviiva-numeroidut-1f");
-                setSourceLayer("tieviiva-numeroidut"+OVERALL_POSTFIX);
+                setSourceLayer("tieviiva-numeroidut" + OVERALL_POSTFIX);
                 setMinZoom(0);
                 setMaxZoom(ROAD_OVERALL_BREAKPOINT);
             }});
-            addSourceLayer(new Tie2A2BFill(){{
+            addSourceLayer(new Tie2A2BFill() {{
                 setId("tieviiva-numeroidut-2f");
-                setSourceLayer("tieviiva-numeroidut"+OVERALL_POSTFIX);
+                setSourceLayer("tieviiva-numeroidut" + OVERALL_POSTFIX);
                 setMinZoom(6);
                 setMaxZoom(ROAD_OVERALL_BREAKPOINT);
             }});
-            addSourceLayer(new Tie3A3BFill(){{
+            addSourceLayer(new Tie3A3BFill() {{
                 setId("tieviiva-numeroidut-3f");
-                setSourceLayer("tieviiva-numeroidut"+OVERALL_POSTFIX);
+                setSourceLayer("tieviiva-numeroidut" + OVERALL_POSTFIX);
                 setMinZoom(9);
                 setMaxZoom(ROAD_OVERALL_BREAKPOINT);
 
             }});
 
-            addSourceLayer(new BasicLine("valtakunnanraja"+OVERALL_POSTFIX, "#4D00B3") {{getPaint().setLineWidth(3.0);}});
+            addSourceLayer(new BasicLine("valtakunnanraja" + OVERALL_POSTFIX, "#4D00B3") {{
+                getPaint().setLineWidth(3.0);
+            }});
 
         }
 
@@ -439,7 +469,7 @@ public class Maastokartta extends MapLibre {
             addSourceLayer(new CircleLayerDefinition() {{
                 setSource("mtk");
                 setSourceLayer("suurjannitelinjanpylvas");
-                setPaint(new CirclePaint(){{
+                setPaint(new CirclePaint() {{
                     setCircleRadius(5.0);
                     setCircleColor("white");
                     setCircleStrokeColor("black");
@@ -450,7 +480,7 @@ public class Maastokartta extends MapLibre {
             addSourceLayer(new CircleLayerDefinition() {{
                 setSource("mtk");
                 setSourceLayer("muuntaja");
-                setPaint(new CirclePaint(){{
+                setPaint(new CirclePaint() {{
                     setCircleRadius(5.0);
                     setCircleColor("white");
                     setCircleStrokeColor("black");
@@ -461,11 +491,11 @@ public class Maastokartta extends MapLibre {
             addSourceLayer(new SymbolLayerDefinition() {{
                 setSource("mtk");
                 setSourceLayer("sahkolinjansymboli");
-                setPaint(new SymbolPaint(){{
+                setPaint(new SymbolPaint() {{
                     setTextHaloColor("white");
                     setTextHaloWidth(1);
                 }});
-                setLayout(new SymbolLayout(){{
+                setLayout(new SymbolLayout() {{
                     setTextField("Z");
                     setTextSize(12.0);
 
@@ -494,30 +524,9 @@ public class Maastokartta extends MapLibre {
             }});
             addSourceLayer(new Kaislikko());
 
-            addSourceLayer(new TekstiKunnannimi());
-            addSourceLayer(new TekstiMajorCity());
-
         }
 
     }
-
-    public static final String defAsJson = new LocalMapDef().toString();
-
-    public Maastokartta() {
-        // Static basemaps should be static in actual usage, e.g. like on following line, building dynamically here
-        // for more agile development with JRebel and friends
-        // initStyle(defAsJson);
-        super(new LocalMapDef().str());
-
-        setCenter(22.1, 60.2);
-        setZoomLevel(10);
-
-//        addLineLayer("kk", "korkeuskayrafgb", new LinePaint(new RgbaColor(0,0,0,1.0), 2.0));
-        addMoveEndListener(e -> {
-            VNotification.show("ZL:" + e.getZoomLevel());
-        });
-    }
-
 
 
 }

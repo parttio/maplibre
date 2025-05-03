@@ -2,11 +2,12 @@ package org.vaadin.addons.maplibre.finnishterrainmap;
 
 import org.vaadin.addons.maplibre.dto.SymbolLayerDefinition;
 import org.vaadin.addons.maplibre.dto.expressions.Equals;
+import org.vaadin.addons.maplibre.dto.expressions.NotEquals;
 
-public class TekstiKunnannimi extends SymbolLayerDefinition {
+public class TekstiPaikannimi extends SymbolLayerDefinition {
 
-    public TekstiKunnannimi() {
-        setId("tekstikunnannimi");
+    public TekstiPaikannimi() {
+        setId(getClass().getSimpleName());
         setSource("mtk");
         setSourceLayer("paikannimi");
         setPaint(new org.vaadin.addons.maplibre.dto.SymbolPaint(){{
@@ -16,13 +17,13 @@ public class TekstiKunnannimi extends SymbolLayerDefinition {
         }});
         setLayout(new org.vaadin.addons.maplibre.dto.SymbolLayout(){{
             setTextField("{teksti}");
-            setTextSize(16);
+            setTextSize(12);
             setTextFont("Open Sans Semibold");
 
 //            setTextAllowOverlap(true);
         }});
         setFilter(
-                new Equals("kohdeluokka", 48111)
+                new NotEquals("kohdeluokka", 48111)
         );
     }
 }
