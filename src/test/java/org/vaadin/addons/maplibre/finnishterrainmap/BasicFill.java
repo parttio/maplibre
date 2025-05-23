@@ -1,14 +1,14 @@
 package org.vaadin.addons.maplibre.finnishterrainmap;
 
+import in.virit.color.Color;
+import in.virit.color.HexColor;
 import org.vaadin.addons.maplibre.FillPaint;
-import org.vaadin.addons.maplibre.dto.Color;
 import org.vaadin.addons.maplibre.dto.FillLayerDefinition;
-import org.vaadin.addons.maplibre.dto.RawColor;
 
 public class BasicFill extends FillLayerDefinition {
 
     public BasicFill(String layer, String hexColor) {
-        this(layer, new RawColor(hexColor));
+        this(layer, HexColor.of(hexColor));
     }
 
     public BasicFill(String layer, Color color) {

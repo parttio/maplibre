@@ -1,7 +1,7 @@
 package org.vaadin.addons.maplibre;
 
+import in.virit.color.Color;
 import org.vaadin.addons.maplibre.dto.AbstractKebabCasedDto;
-import org.vaadin.addons.maplibre.dto.Color;
 import org.vaadin.addons.maplibre.dto.expressions.Expression;
 
 public class LinePaint extends AbstractKebabCasedDto {

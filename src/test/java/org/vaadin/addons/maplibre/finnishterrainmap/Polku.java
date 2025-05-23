@@ -1,13 +1,13 @@
 package org.vaadin.addons.maplibre.finnishterrainmap;
 
-import org.vaadin.addons.maplibre.dto.RgbaColor;
+import in.virit.color.RgbColor;
 import org.vaadin.addons.maplibre.dto.expressions.All;
 import org.vaadin.addons.maplibre.dto.expressions.Equals;
 
 public class Polku extends BasicLine {
 
     public Polku() {
-        super("tieviiva-muut", new RgbaColor(14, 14, 14, 1));
+        super("tieviiva-muut", new RgbColor(14, 14, 14, 1));
         setId("ajopolku");
 
         setFilter(new All(

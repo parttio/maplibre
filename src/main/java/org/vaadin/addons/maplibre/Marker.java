@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.popover.Popover;
 import com.vaadin.flow.component.popover.PopoverVariant;
 import com.vaadin.flow.function.SerializableSupplier;
+import in.virit.color.Color;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -148,7 +149,7 @@ public class Marker extends GeometryLayer {
         }
     }
 
-    public void setColor(String color) {
+    public void setColor(Color color) {
         map.js("""
                     const marker = component.markers['$id'];
                     const element = marker.getElement();

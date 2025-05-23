@@ -9,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.popover.Popover;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import in.virit.color.NamedColor;
 
 @Route
 public class PopoverOnMarker extends VerticalLayout {
@@ -48,7 +49,7 @@ public class PopoverOnMarker extends VerticalLayout {
                         </g>
                     </svg>
 """);
-            marker.setColor("green");
+            marker.setColor(NamedColor.GREEN);
             // default with the svg above is towards NE, we rotate it to W
             marker.setRotation(-45 - 90);
             // Adjust to be "visually centered" on the spot

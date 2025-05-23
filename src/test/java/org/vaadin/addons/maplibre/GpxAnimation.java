@@ -4,6 +4,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import in.virit.color.HexColor;
 import io.jenetics.jpx.GPX;
 import io.jenetics.jpx.Track;
 import io.jenetics.jpx.TrackSegment;
@@ -11,7 +12,7 @@ import io.jenetics.jpx.WayPoint;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
-import org.vaadin.addons.maplibre.dto.Color;
+import in.virit.color.Color;
 import org.vaadin.firitin.components.RichText;
 
 import java.net.URI;
@@ -89,7 +90,7 @@ public class GpxAnimation extends VerticalLayout {
                     marker.setPoint(gf.createPoint(new Coordinate(current.getLongitude().doubleValue(), current.getLatitude().doubleValue())));
                     if(tail == null) {
                         LineString lineString = gf.createLineString(tailToDraw);
-                        var greenTranslucent = new LinePaint(Color.hex("#00ff00"), 2.0);
+                        var greenTranslucent = new LinePaint(HexColor.of("#00ff00"), 2.0);
                         // Testing the supplemental JSON API here, this gets merged
                         // to the LinePaint DTO
                         greenTranslucent.setSupplementalJson("""

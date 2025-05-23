@@ -4,10 +4,11 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import in.virit.color.HexColor;
+import in.virit.color.NamedColor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
-import org.vaadin.addons.maplibre.dto.Color;
 import org.vaadin.addons.maplibre.dto.FlyToOptions;
 import org.vaadin.firitin.geolocation.Geolocation;
 import org.vaadin.firitin.geolocation.GeolocationOptions;
@@ -42,7 +43,7 @@ public class GpsTrackingAndRotation extends VerticalLayout {
 
             if (marker == null) {
                 marker = map.addMarker(coords.getLongitude(), coords.getLatitude());
-                marker.setColor("#009900");
+                marker.setColor(NamedColor.GREEN);
                 map.flyTo(marker.getGeometry());
             } else {
                 // update position
@@ -72,7 +73,7 @@ public class GpsTrackingAndRotation extends VerticalLayout {
             if (tailpoints.size() == 2) {
                 var ls = gf.createLineString(tailpoints.toArray(new Coordinate[0]));
                 // create and start showing the tail
-                tail = map.addLineLayer(ls, new LinePaint(Color.hex("#00ff00"), 2.0));
+                tail = map.addLineLayer(ls, new LinePaint(HexColor.of("#00ff00"), 2.0));
             } else if (tailpoints.size() > 2) {
                 // update tail
                 tail.addCoordinates(tailpoints.size() == 100 ? 1 : 0, tailpoints.get(tailpoints.size() - 1));

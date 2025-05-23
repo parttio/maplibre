@@ -1,5 +1,7 @@
 package org.vaadin.addons.maplibre.components;
 
+import in.virit.color.Color;
+import in.virit.color.NamedColor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -7,7 +9,6 @@ import org.vaadin.addons.maplibre.LineLayer;
 import org.vaadin.addons.maplibre.LinePaint;
 import org.vaadin.addons.maplibre.MapLibre;
 import org.vaadin.addons.maplibre.Marker;
-import org.vaadin.addons.maplibre.dto.RawColor;
 import org.vaadin.addons.maplibre.dto.SymbolLayout;
 
 import java.time.Duration;
@@ -47,7 +48,7 @@ public class TrackerMarker {
     private final MapLibre map;
     private Duration maxAge = Duration.ofMinutes(2);
     private Integer maxPoints;
-    private String color = "rgba(0, 0, 255, 1)";
+    private Color color = NamedColor.BLUE;
 
     LinkedList<TrackPoint> points = new LinkedList<>();
 
@@ -128,10 +129,10 @@ public class TrackerMarker {
     }
 
     protected String getDefaultSvgMarkerCss() {
-        return "fill: " + getColor();
+        return "fill: " + getColor().toString();
     }
 
-    public String getColor() {
+    public Color getColor() {
         return color;
     }
 
@@ -148,7 +149,7 @@ public class TrackerMarker {
     }
 
     protected LinePaint getLinePaint() {
-        return new LinePaint(new RawColor(getColor())) {{
+        return new LinePaint(getColor()) {{
             setLineWidth(2.0);
         }};
     }
@@ -168,7 +169,7 @@ public class TrackerMarker {
         return marker;
     }
 
-    public void setColor(String color) {
+    public void setColor(Color color) {
         this.color = color;
         if(marker != null) {
             marker.setColor(color);

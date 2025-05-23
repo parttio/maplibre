@@ -1,9 +1,9 @@
 package org.vaadin.addons.maplibre.finnishterrainmap;
 
-import org.vaadin.addons.maplibre.dto.RgbaColor;
+import in.virit.color.RgbColor;
 
 public class MaankayttoReuna extends BasicLine {
     public MaankayttoReuna() {
-        super("maastokuvionreuna", new RgbaColor(0, 0, 0, 0.2));
+        super("maastokuvionreuna", new RgbColor(0, 0, 0, 0.2));
     }
 }

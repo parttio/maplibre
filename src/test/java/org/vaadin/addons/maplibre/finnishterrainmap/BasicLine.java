@@ -1,14 +1,14 @@
 package org.vaadin.addons.maplibre.finnishterrainmap;
 
+import in.virit.color.Color;
+import in.virit.color.HexColor;
 import org.vaadin.addons.maplibre.LinePaint;
-import org.vaadin.addons.maplibre.dto.Color;
 import org.vaadin.addons.maplibre.dto.LineLayerDefinition;
-import org.vaadin.addons.maplibre.dto.RawColor;
 
 public class BasicLine extends LineLayerDefinition {
 
     public BasicLine(String layer, String hexColor) {
-        this(layer, new RawColor(hexColor));
+        this(layer, new HexColor(hexColor));
     }
 
     public BasicLine(String layer, Color color) {

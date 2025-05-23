@@ -1,11 +1,11 @@
 package org.vaadin.addons.maplibre;
 
 import com.vaadin.flow.router.Route;
+import in.virit.color.RgbColor;
 import org.vaadin.addons.maplibre.dto.CircleLayerDefinition;
 import org.vaadin.addons.maplibre.dto.CirclePaint;
 import org.vaadin.addons.maplibre.dto.FillLayerDefinition;
 import org.vaadin.addons.maplibre.dto.LineLayerDefinition;
-import org.vaadin.addons.maplibre.dto.RgbaColor;
 import org.vaadin.addons.maplibre.dto.SymbolLayerDefinition;
 import org.vaadin.addons.maplibre.dto.SymbolLayout;
 import org.vaadin.addons.maplibre.dto.SymbolPaint;
@@ -64,7 +64,7 @@ public class FancyNauticalMapOfFinland extends Maastokartta {
         addSourceLayer(new LineLayerDefinition() {{
             setSource(MERIDATA);
             setSourceLayer("DepthContour");
-            setPaint(new LinePaint(new RgbaColor(109, 109, 184, 0.5), 1.0));
+            setPaint(new LinePaint(new RgbColor(109, 109, 184, 0.5), 1.0));
             setMinZoom(12);
         }});
         // Above is the same as below
@@ -148,7 +148,7 @@ public class FancyNauticalMapOfFinland extends Maastokartta {
             setId("vaylat");
             setSource(MERIDATA);
             setSourceLayer("vesikulkuvayla");
-            setPaint(new LinePaint(new RgbaColor(0, 200, 0, 0.9)));
+            setPaint(new LinePaint(new RgbColor(0, 200, 0, 0.9)));
             setMinZoom(11);
             setFilter(new NotEquals("kohdeluokka", Kohdeluokka.LAIVAVAYLALINJA));
         }});
@@ -156,7 +156,7 @@ public class FancyNauticalMapOfFinland extends Maastokartta {
             setId("navigointilinjat");
             setSource(MERIDATA);
             setSourceLayer("vesikulkuvayla");
-            setPaint(new LinePaint(new RgbaColor(0, 200, 0, 0.9)) {{
+            setPaint(new LinePaint(new RgbColor(0, 200, 0, 0.9)) {{
                 setLineDasharray(4, 4);
             }});
             setMinZoom(11);

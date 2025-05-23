@@ -1,13 +1,13 @@
 package org.vaadin.addons.maplibre.finnishterrainmap;
 
-import org.vaadin.addons.maplibre.dto.RgbaColor;
+import in.virit.color.RgbColor;
 import org.vaadin.addons.maplibre.dto.expressions.Any;
 import org.vaadin.addons.maplibre.dto.expressions.Equals;
 
 public class Ajotie extends BasicLine {
 
     public Ajotie() {
-        super("tieviiva-muut", new RgbaColor(14, 14, 14, 1));
+        super("tieviiva-muut", new RgbColor(14, 14, 14, 1));
         setId("ajotie");
 
         setFilter(new Any(

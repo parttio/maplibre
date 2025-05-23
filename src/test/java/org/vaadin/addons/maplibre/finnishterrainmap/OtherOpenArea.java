@@ -1,6 +1,6 @@
 package org.vaadin.addons.maplibre.finnishterrainmap;
 
-import org.vaadin.addons.maplibre.dto.RgbaColor;
+import in.virit.color.RgbColor;
 import org.vaadin.addons.maplibre.dto.expressions.Any;
 import org.vaadin.addons.maplibre.dto.expressions.CaseExpression;
 import org.vaadin.addons.maplibre.dto.expressions.Equals;
@@ -8,7 +8,7 @@ import org.vaadin.addons.maplibre.dto.expressions.PropertyEquals;
 
 public class OtherOpenArea extends BasicFill {
     public OtherOpenArea() {
-        super("muuavoinalue", new RgbaColor(255,255,130, 1.0));
+        super("muuavoinalue", new RgbColor(255,255,130, 1.0));
 
         // TODO e.g. 45° lines or different colors for vesijättö
         /**

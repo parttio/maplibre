@@ -1,6 +1,6 @@
 package org.vaadin.addons.maplibre.dto.expressions;
 
-import org.vaadin.addons.maplibre.dto.Color;
+import in.virit.color.Color;
 
 public class ZoomStep {
     private final int zoom;

@@ -1,7 +1,6 @@
 package org.vaadin.addons.maplibre;
 
 import org.vaadin.addons.maplibre.dto.AbstractKebabCasedDto;
-import org.vaadin.addons.maplibre.dto.Color;
 import org.vaadin.addons.maplibre.dto.expressions.Expression;
 
 public class LineLayout extends AbstractKebabCasedDto {

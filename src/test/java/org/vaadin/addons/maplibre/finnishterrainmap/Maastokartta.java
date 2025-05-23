@@ -3,13 +3,13 @@ package org.vaadin.addons.maplibre.finnishterrainmap;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.router.Route;
+import in.virit.color.HexColor;
+import in.virit.color.RgbColor;
 import org.vaadin.addons.maplibre.LinePaint;
 import org.vaadin.addons.maplibre.MapLibre;
 import org.vaadin.addons.maplibre.dto.CircleLayerDefinition;
 import org.vaadin.addons.maplibre.dto.CirclePaint;
 import org.vaadin.addons.maplibre.dto.LineLayerDefinition;
-import org.vaadin.addons.maplibre.dto.RawColor;
-import org.vaadin.addons.maplibre.dto.RgbaColor;
 import org.vaadin.addons.maplibre.dto.RootDefinition;
 import org.vaadin.addons.maplibre.dto.SymbolLayerDefinition;
 import org.vaadin.addons.maplibre.dto.SymbolLayout;
@@ -43,7 +43,7 @@ public class Maastokartta extends MapLibre {
         setCenter(22.1, 60.2);
         setZoomLevel(10);
 
-//        addLineLayer("kk", "korkeuskayrafgb", new LinePaint(new RgbaColor(0,0,0,1.0), 2.0));
+//        addLineLayer("kk", "korkeuskayrafgb", new LinePaint(new RgbColor(0,0,0,1.0), 2.0));
         addMoveEndListener(e -> {
             VNotification.show("ZL:" + e.getZoomLevel());
         });
@@ -88,7 +88,7 @@ public class Maastokartta extends MapLibre {
             addSourceLayer(new LineLayerDefinition("kk100") {{
                 setSource("kk100");
                 setSourceLayer("korkeuskayra100");
-                setPaint(new LinePaint(new RgbaColor(164, 50, 50, 0.5)) {{
+                setPaint(new LinePaint(new RgbColor(164, 50, 50, 0.5)) {{
                     setLineWidth(Interpolate.linear().zoom(new ZoomStep(6, 0.001), new ZoomStep(8, .5)));
                     setMinZoom(6);
                 }});
@@ -100,9 +100,9 @@ public class Maastokartta extends MapLibre {
                 setSourceLayer("korkeuskayra20");
                 setPaint(new LinePaint() {{
                     setLineColor(Interpolate.linear().zoom(
-                            new ZoomStep(OVERALL_BREAKPOINT + -2, new RgbaColor(164, 50, 50, 0.0)),
-                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbaColor(164, 50, 50, 0.5)),
-                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbaColor(164, 50, 50, .0))));
+                            new ZoomStep(OVERALL_BREAKPOINT + -2, new RgbColor(164, 50, 50, 0.0)),
+                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbColor(164, 50, 50, 0.5)),
+                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbColor(164, 50, 50, .0))));
 
                     setLineWidth(Interpolate.linear().zoom(new ZoomStep(6, 0.001), new ZoomStep(11, 1.0)));
                 }});
@@ -116,8 +116,8 @@ public class Maastokartta extends MapLibre {
                 setSourceLayer("korkeuskayra");
                 setPaint(new LinePaint() {{
                     setLineColor(Interpolate.linear().zoom(
-                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbaColor(164, 50, 50, 0.0)),
-                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbaColor(164, 50, 50, 1.0))));
+                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbColor(164, 50, 50, 0.0)),
+                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbColor(164, 50, 50, 1.0))));
                     setLineWidth(Interpolate.linear().zoom(new ZoomStep(10, 0.05), new ZoomStep(16, 2.0)));
                 }});
                 setSupplementalJson("""
@@ -133,8 +133,8 @@ public class Maastokartta extends MapLibre {
                 final double fraction = 0.6;
                 setPaint(new LinePaint() {{
                     setLineColor(Interpolate.linear().zoom(
-                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbaColor(164, 50, 50, 0.0)),
-                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbaColor(164, 50, 50, 1.0))));
+                            new ZoomStep(OVERALL_BREAKPOINT + 1, new RgbColor(164, 50, 50, 0.0)),
+                            new ZoomStep(OVERALL_BREAKPOINT + 2, new RgbColor(164, 50, 50, 1.0))));
                     setLineWidth(Interpolate.linear().zoom(new ZoomStep(10, 0.05 * fraction), new ZoomStep(16, 2 * fraction)));
                     //setLineDasharray(4,2);
                 }});
@@ -160,10 +160,10 @@ public class Maastokartta extends MapLibre {
             addSourceLayer(new LineLayerDefinition("vesikivikko") {{
                 setSource("mtk");
                 setSourceLayer("vesikivikko");
-                //TODO support proper colors new RgbaColor(0,0,255,0.5)
+                //TODO support proper colors new RgbColor(0,0,255,0.5)
                 // In nautical map, dotted line is used to indicate shallow water 🤔
                 setPaint(new LinePaint() {{
-                    setLineColor(new RgbaColor(0, 0, 0, 0.5));
+                    setLineColor(new RgbColor(0, 0, 0, 0.5));
                     setLineWidth(1.0);
                     setLineDasharray(1, 1);
                 }});
@@ -194,8 +194,8 @@ public class Maastokartta extends MapLibre {
                 // bit darker color for simplified overall water areas, "terrain map standard" is quite light for small levels
                 // TODO make it expression so that it is the standard when changing to "full details".
                 Interpolate color = Interpolate.linear().zoom(
-                        new ZoomStep(6, new RawColor("#023E9C")),
-                        new ZoomStep(OVERALL_BREAKPOINT, new RawColor("#80FFFE"))
+                        new ZoomStep(6, HexColor.of("#023E9C")),
+                        new ZoomStep(OVERALL_BREAKPOINT, HexColor.of("#80FFFE"))
                 );
                 getPaint().setFillColor(color);
                 setMaxZoom(OVERALL_BREAKPOINT);

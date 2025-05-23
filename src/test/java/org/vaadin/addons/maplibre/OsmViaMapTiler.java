@@ -5,6 +5,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import in.virit.color.NamedColor;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.WKTReader;
@@ -37,7 +38,7 @@ public class OsmViaMapTiler extends VerticalLayout {
 
             Polygon polygon = (Polygon) new WKTReader().read("POLYGON((22.290 60.428, 22.310 60.429, 22.31 60.47, 22.28 60.47, 22.290 60.428))");
 
-            map.addFillLayer(polygon, new FillPaint("red", 0.2));
+            map.addFillLayer(polygon, new FillPaint(NamedColor.RED, 0.2));
 
             map.fitToContent();
 

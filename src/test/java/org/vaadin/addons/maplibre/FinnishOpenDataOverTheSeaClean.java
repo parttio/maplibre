@@ -7,7 +7,7 @@ import org.vaadin.addons.maplibre.dto.CircleLayerDefinition;
 import org.vaadin.addons.maplibre.dto.CirclePaint;
 import org.vaadin.addons.maplibre.dto.FillLayerDefinition;
 import org.vaadin.addons.maplibre.dto.LineLayerDefinition;
-import org.vaadin.addons.maplibre.dto.RgbaColor;
+import in.virit.color.RgbColor;
 import org.vaadin.addons.maplibre.dto.RootDefinition;
 import org.vaadin.addons.maplibre.dto.SymbolLayerDefinition;
 import org.vaadin.addons.maplibre.dto.SymbolLayout;
@@ -86,7 +86,7 @@ public class FinnishOpenDataOverTheSeaClean extends VerticalLayout {
             addSourceLayer(new LineLayerDefinition() {{
                 setSource(MERIDATA);
                 setSourceLayer("DepthContour");
-                setPaint(new LinePaint(new RgbaColor(109, 109, 184, 0.5), 1.0));
+                setPaint(new LinePaint(new RgbColor(109, 109, 184, 0.5), 1.0));
                 setMinZoom(12);
             }});
             // Above is the same as below
@@ -170,7 +170,7 @@ public class FinnishOpenDataOverTheSeaClean extends VerticalLayout {
                 setId("navigointilinjat");
                 setSource(MERIDATA);
                 setSourceLayer("navigointilinjat");
-                setPaint(new LinePaint(new RgbaColor(0, 200, 0, 0.9)));
+                setPaint(new LinePaint(new RgbColor(0, 200, 0, 0.9)));
                 setMinZoom(11);
             }});
 

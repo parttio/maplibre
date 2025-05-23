@@ -9,12 +9,13 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
+import in.virit.color.NamedColor;
 import org.apache.commons.io.IOUtils;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
-import org.vaadin.addons.maplibre.dto.RgbaColor;
+import in.virit.color.RgbColor;
 import org.vaadin.addons.maplibre.dto.VectorMapSource;
 import org.vaadin.firitin.components.RichText;
 import org.vaadin.firitin.components.orderedlayout.VHorizontalLayout;
@@ -52,8 +53,8 @@ public class FinnishOpenDataExample extends VerticalLayout {
 //            addSource("kiinteisto-avoin", "{'type':'vector', 'url':\"https://avoin-karttakuva.maanmittauslaitos.fi/kiinteisto-avoin/v3/kiinteistojaotus/WGS84_Pseudo-Mercator/tilejson.json?api-key=95065def-f53b-44d6-b429-769c3d504e13\"}");
 
             addSource("kiinteisto-avoin", new VectorMapSource("https://avoin-karttakuva.maanmittauslaitos.fi/kiinteisto-avoin/v3/kiinteistojaotus/WGS84_Pseudo-Mercator/tilejson.json?api-key=95065def-f53b-44d6-b429-769c3d504e13"));
-            addLineLayer("rajat", "kiinteisto-avoin", "KiinteistorajanSijaintitiedot", new LinePaint(new RgbaColor(255,0,0,1), 2.0), null);
-            addFillLayer("alueet", "kiinteisto-avoin", "PalstanSijaintitiedot", new FillPaint("rgba(255,0,0,0.015)", null), null);
+            addLineLayer("rajat", "kiinteisto-avoin", "KiinteistorajanSijaintitiedot", new LinePaint(new RgbColor(255,0,0,1), 2.0), null);
+            addFillLayer("alueet", "kiinteisto-avoin", "PalstanSijaintitiedot", new FillPaint(new RgbColor(255,0,0,0.015), null), null);
 
             // Add a client side click listener to the map, to get the property id
             // from the base layer and pass that to server side method
@@ -89,7 +90,7 @@ public class FinnishOpenDataExample extends VerticalLayout {
                 GeometryCollection geom = (GeometryCollection) new GeoJsonReader().read(responsegeojson);
                 for(int i = 0; i < geom.getNumGeometries(); i++) {
                     Polygon polygon = (Polygon) geom.getGeometryN(i);
-                    highlightedLayers.add(addFillLayer(polygon, new FillPaint("red", 0.5)));
+                    highlightedLayers.add(addFillLayer(polygon, new FillPaint(NamedColor.RED, 0.5)));
                 }
                 // Show the raw (but formatted) details in a pre element
                 ObjectMapper mapper = new ObjectMapper();
