@@ -1,2 +1,4 @@
 target
 frontend/generated
+.claude-contained/
+node_modules

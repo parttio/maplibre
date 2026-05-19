@@ -11,10 +11,12 @@ public class LineStringField extends AbstractFeatureField<LineString> {
     private LineString lineString;
 
     public LineStringField() {
+        addClassName("maplibre-linestring-field");
     }
 
     public LineStringField(String label) {
         super(label);
+        addClassName("maplibre-linestring-field");
     }
 
     @Override

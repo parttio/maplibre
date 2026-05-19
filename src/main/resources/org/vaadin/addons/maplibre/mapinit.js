@@ -5,7 +5,9 @@ if(!style) {
 const component = this;
 const conf = {
    container: this,
-   style: style
+   style: style,
+   interactive : $interactive,
+   cooperativeGestures : $cooperativeGestures
 }
 // center & zoom only if explicitly set, can com from style as well
 if($setCenter) {

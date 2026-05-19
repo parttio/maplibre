@@ -1,6 +1,6 @@
 package org.vaadin.addons.maplibre;
 
-import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -27,6 +27,7 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
             getDrawControl().setMode(DrawControl.DrawMode.DRAW_POLYGON);
             cuttingHole = true;
         });
+        addClassName("maplibre-polygon-field");
     }
 
     public PolygonField(String label) {
@@ -96,10 +97,15 @@ public class PolygonField extends AbstractFeatureField<Polygon> {
                 getDrawControl().setGeometry(polygon);
                 getDrawControl().setMode(DrawControl.DrawMode.SIMPLE_SELECT);
                 getDrawControl().directSelectFirst();
-                getMap().fitBounds(polygon);
+                //getMap().fitBounds(polygon);
+                getMap().fitTo(polygon.getEnvelope(), getZoomPadding());
             }
         });
 
+    }
+
+    private double getZoomPadding() {
+        return 50;
     }
 
 }

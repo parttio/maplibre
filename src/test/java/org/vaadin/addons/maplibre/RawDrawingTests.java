@@ -13,6 +13,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import in.virit.color.Color;
+import org.mockito.internal.matchers.Not;
 import org.vaadin.addons.parttio.colorful.RgbaColorPicker;
 import org.vaadin.firitin.components.RichText;
 import org.vaadin.firitin.components.button.VButton;
@@ -31,6 +32,7 @@ import java.util.concurrent.CompletableFuture;
 //@StyleSheet("https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.2/mapbox-gl-draw.css")
 public class RawDrawingTests extends VVerticalLayout {
     private final MapLibre map;
+    private Layer previouslyDrawn;
 
 
     private Color color = NamedColor.BLUE;
@@ -45,6 +47,14 @@ public class RawDrawingTests extends VVerticalLayout {
         try {
             map = new MapLibre(new URI("https://demotiles.maplibre.org/style.json"));
             map.setWidthFull();
+
+            map.addMapClickListener(evt -> {
+                Layer layer = evt.getLayer();
+                if(layer instanceof GeometryLayer gm && previouslyDrawn == layer) {
+                    Notification.show("Previously drawn geometry clicked on geometry:" +  gm.getGeometry().toText());
+                }
+            });
+
             withExpanded(map);
 
             add(new VHorizontalLayout(
@@ -63,7 +73,8 @@ public class RawDrawingTests extends VVerticalLayout {
                     }},
                     new VButton("Draw polygon (CTRL-P)", e -> {
                         drawPolygon().thenAccept(polygon -> {
-                            map.addFillLayer(polygon, new FillPaint(color, 0.3));
+                            previouslyDrawn = map.addFillLayer(polygon, new FillPaint(color, 0.3));
+
                         });
                     }).withClickShortcut(Key.KEY_P, KeyModifier.CONTROL),
                     new VButton("Draw linestring (CTRL-L)", e -> {

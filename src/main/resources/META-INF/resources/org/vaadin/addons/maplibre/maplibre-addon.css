@@ -9,7 +9,7 @@ vaadin-custom-field .maplibre-toolbar {
     --vaadin-button-background: rgba(255,255,255,0.7);
     --vaadin-button-border-radius: 0;
     margin-left: var(--lumo-space-xs);
-    box-shadow 0 0 0 2px rgba(0,0,0,.1);
+    box-shadow: 0 0 0 2px rgba(0,0,0,.1);
 }
 
 vaadin-custom-field .maplibre-toolbar vaadin-button {

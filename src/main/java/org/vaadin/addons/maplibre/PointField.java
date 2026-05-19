@@ -15,6 +15,7 @@ public class PointField extends AbstractFeatureField<Point> implements Marker.Dr
     }
 
     public PointField() {
+        addClassName("maplibre-point-field");
     }
 
     @Override

@@ -71,6 +71,8 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     private boolean detached;
     private LinkedList<Runnable> deferredJsCalls = new LinkedList<>();
     private Polygon lastKnownViewPort;
+    private boolean interactive = true;
+    private boolean cooperativeGestures;
 
     public MapLibre() {
 
@@ -169,7 +171,9 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                     "style", styleJson == null ? "null" : styleJson, // Map.of is not nullsafe :-(
                     "styleUrl", styleUrl == null ? "null" : styleUrl,
                     "setCenter", center != null,
-                    "setZoom", zoomLevel != null
+                    "setZoom", zoomLevel != null,
+                    "interactive", interactive,
+                    "cooperativeGestures", cooperativeGestures
             ));
             initialized = true;
         }
@@ -201,7 +205,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     protected void loadMapLibreJs() {
         UI current = UI.getCurrent();
         if(current != null) {
-            JSLoader.loadUnpkg(this, "maplibre-gl", "5.5.0", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
+            JSLoader.loadUnpkg(this, "maplibre-gl", "5.21.1", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
         }
     }
 
@@ -430,7 +434,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         fitTo(envelope, padding);
     }
 
-    protected void fitTo(Envelope envelope, double padding) {
+    public void fitTo(Envelope envelope, double padding) {
         fitTo("""
                     const bounds = new maplibregl.LngLatBounds(
                     [%s, %s], [%s, %s]);;
@@ -650,6 +654,28 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     public void setCursor(String crosshair) {
         js("map.getCanvas().style.cursor = '$cursor';", Map.of("cursor", crosshair));
+    }
+
+    public void setInteractive(boolean interactive) {
+        if(initialized) {
+            throw new IllegalStateException("Interactivity must be defined before first draw");
+        }
+        this.interactive = interactive;
+        // TODO figure out if there is a way to configure dynamically
+    }
+
+    /**
+     * Enables cooperative gestures. When enabled, the map requires
+     * Ctrl+scroll to zoom and touch with two fingers to pan on touch devices.
+     * This is useful when the map is embedded in a scrollable page.
+     *
+     * @param cooperativeGestures true to enable cooperative gestures
+     */
+    public void setCooperativeGestures(boolean cooperativeGestures) {
+        if(initialized) {
+            throw new IllegalStateException("Cooperative gestures must be defined before first draw");
+        }
+        this.cooperativeGestures = cooperativeGestures;
     }
 
     public interface MoveEndListener {

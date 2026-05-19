@@ -115,8 +115,7 @@
         <dependency>
             <groupId>in.virit</groupId>
             <artifactId>viritin</artifactId>
-            <version>3.0.0</version>
-            <scope>test</scope>
+            <version>3.2.0</version>
         </dependency>
 
         <dependency>
