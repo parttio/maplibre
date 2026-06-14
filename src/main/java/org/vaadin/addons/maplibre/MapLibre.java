@@ -30,6 +30,8 @@ import org.vaadin.addons.maplibre.dto.FitBoundsOptions;
 import org.vaadin.addons.maplibre.dto.LayerDefinition;
 import org.vaadin.addons.maplibre.dto.LineLayerDefinition;
 import org.vaadin.addons.maplibre.dto.Projection;
+import org.vaadin.addons.maplibre.dto.RasterLayerDefinition;
+import org.vaadin.addons.maplibre.dto.RasterMapSource;
 import org.vaadin.addons.velocitycomponent.AbstractVelocityJsComponent;
 import tools.jackson.databind.JsonNode;
 
@@ -295,6 +297,42 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
             map.addLayer($layerDefinition);
         """, Map.of("layerDefinition", layerDefinition));
         return new SourceLayer(layerDefinition.getId(), this);
+    }
+
+    /**
+     * Adds a raster tile layer (XYZ/TMS/WMTS background map) on top of the current
+     * map. This is a convenience for the common case of showing tiled raster
+     * imagery, such as satellite/orthophoto layers or scanned map tiles.
+     * <p>
+     * The tiles are assumed to be 256&times;256 pixels. For full control over the
+     * source (tile size, scheme, attribution, zoom range, opacity, ...), build a
+     * {@link RasterMapSource} yourself and use the
+     * {@link #addRasterTileLayer(String, RasterMapSource)} overload, or the lower
+     * level {@link #addSource(String, AbstractMapSource)} +
+     * {@link #addSourceLayer(LayerDefinition)} with a {@link RasterLayerDefinition}.
+     *
+     * @param id               the id used for both the source and the layer
+     * @param tileUrlTemplates one or more tile URL templates, e.g.
+     *                         {@code "https://example.com/tiles/{z}/{x}/{y}.jpg"}
+     * @return Layer handle (e.g. to remove the layer)
+     */
+    public SourceLayer addRasterTileLayer(String id, String... tileUrlTemplates) {
+        RasterMapSource source = RasterMapSource.ofTiles(tileUrlTemplates);
+        source.setTileSize(256);
+        return addRasterTileLayer(id, source);
+    }
+
+    /**
+     * Adds a raster tile layer for the given pre-configured source on top of the
+     * current map.
+     *
+     * @param id     the id used for both the source and the layer
+     * @param source the raster source to render
+     * @return Layer handle (e.g. to remove the layer)
+     */
+    public SourceLayer addRasterTileLayer(String id, RasterMapSource source) {
+        addSource(id, source);
+        return addSourceLayer(new RasterLayerDefinition(id, id));
     }
 
     /**
