@@ -76,6 +76,15 @@ public class MopoSmokeIT {
     }
 
     @Test
+    public void popupWithSpecialCharacters() {
+        page.navigate(rootUrl + "markermap");
+
+        assertThat(page.locator(".maplibregl-popup-content"))
+                .containsText("Masa's \"Harbour\" C:\\harbours\\masa");
+        mopo.assertNoJsErrors();
+    }
+
+    @Test
     public void osmViaMapTiler() {
         page.navigate(rootUrl + "osmviamaptiler");
 

@@ -197,7 +197,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
             loadMapLibreJs();
             jsTemplate("org/vaadin/addons/maplibre/mapinit.js", Map.of(
                     "style", styleJson == null ? "null" : styleJson, // Map.of is not nullsafe :-(
-                    "styleUrl", styleUrl == null ? "null" : styleUrl,
+                    "styleUrl", styleUrl == null ? "null" : toJsString(styleUrl),
                     "setCenter", center != null,
                     "setZoom", zoomLevel != null,
                     "interactive", interactive,
@@ -465,8 +465,8 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
 
     public void addSprite(String name, String spriteUrl) {
         js("""
-            map.addSprite("$name", "$spriteUrl");
-        """, Map.of("name", name, "spriteUrl", spriteUrl));
+            map.addSprite($name, $spriteUrl);
+        """, Map.of("name", toJsString(name), "spriteUrl", toJsString(spriteUrl)));
     }
 
     public void setProjection(Projection projection) {
@@ -489,6 +489,15 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                     component.markers['$id'].getElement().id = '$id';
                 """, Map.of("id", id, "x", x, "y", y));
         return new Marker(this, id, new Coordinate(x, y));
+    }
+
+    /**
+     * Encodes the given string as a JavaScript string literal (including the
+     * quotes), so that it can be safely substituted into JS templates regardless
+     * of apostrophes, quotes, backslashes or line breaks in the value.
+     */
+    static String toJsString(String value) {
+        return AbstractKebabCasedDto.mapper.writeValueAsString(value);
     }
 
     @Override
@@ -633,7 +642,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public void fitBounds(Geometry geometry, FitBoundsOptions options) {
         String geojson = new GeoJsonWriter().write(geometry.getEnvelope().getBoundary());
         js("""
-                const bbox = JSON.parse('$bbox');
+                const bbox = $bbox;
                 const b = new maplibregl.LngLatBounds(bbox.coordinates[0],bbox.coordinates[1]);
                 bbox.coordinates.forEach(c => {
                     b.extend([c[0],c[1]]);
@@ -721,12 +730,12 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     public void setStyle(String styleUrl) {
         removeAll();
         js("""
-                map.setStyle("$style");
-                """, Map.of("style", styleUrl));
+                map.setStyle($style);
+                """, Map.of("style", toJsString(styleUrl)));
     }
 
     public void setCursor(String crosshair) {
-        js("map.getCanvas().style.cursor = '$cursor';", Map.of("cursor", crosshair));
+        js("map.getCanvas().style.cursor = $cursor;", Map.of("cursor", toJsString(crosshair)));
     }
 
     public void setInteractive(boolean interactive) {

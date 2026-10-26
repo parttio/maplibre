@@ -176,7 +176,7 @@ public class DrawControl {
     public void setGeometry(Geometry geometry) {
         String geojsonstr = new GeoJsonWriter().write(geometry);
         js("""
-            const geojson = JSON.parse('$geojsonstr');
+            const geojson = $geojsonstr;
             draw.deleteAll();
             if(geojson.type == "GeometryCollection") {
                geojson.geometries.forEach(g => draw.add(g));

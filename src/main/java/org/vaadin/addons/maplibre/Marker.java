@@ -43,9 +43,9 @@ public class Marker extends GeometryLayer {
                     const marker = component.markers['$id'];
                     const popup = new maplibregl.Popup({closeButton: true, closeOnClick: true})
                         .setLngLat(marker.getLngLat())
-                        .setHTML('$html');
+                        .setHTML($html);
                     marker.setPopup(popup);
-                """, Map.of("id", id, "html", html));
+                """, Map.of("id", id, "html", MapLibre.toJsString(html)));
         return this;
     }
 
@@ -161,13 +161,11 @@ public class Marker extends GeometryLayer {
     }
 
     public void setHtml(String rawHtml) {
-        rawHtml = rawHtml.replaceAll("\n", "");
-        rawHtml = rawHtml.replaceAll("'", "\\\\'");
         map.js("""
                     const marker = component.markers['$id'];
                     const element = marker.getElement();
-                    element.innerHTML = '$html';
-                """, Map.of("id", id, "html", rawHtml));
+                    element.innerHTML = $html;
+                """, Map.of("id", id, "html", MapLibre.toJsString(rawHtml)));
     }
 
     public void setOffset(double x, double y) {

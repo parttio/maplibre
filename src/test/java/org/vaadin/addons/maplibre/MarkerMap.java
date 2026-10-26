@@ -66,6 +66,11 @@ public class MarkerMap extends VerticalLayout {
             marker.setHtml(svgMarker.replace("_T_", "66"));
             marker.addClickListener(() -> Notification.show("That's 66!"));
 
+            // Apostrophes, quotes, backslashes and line breaks must not break the JS
+            map.addMarker(18.945831, 60.192059)
+                    .withPopup("<b>Masa's \"Harbour\"</b>\nC:\\harbours\\masa")
+                    .openPopup();
+
 
             VStyleUtil.injectAsFirst("""
                 .e1 {

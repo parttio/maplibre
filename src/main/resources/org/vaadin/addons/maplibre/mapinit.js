@@ -1,6 +1,6 @@
 var style = $style;
 if(!style) {
-    style = '$styleUrl';
+    style = $styleUrl;
 }
 const component = this;
 const conf = {
