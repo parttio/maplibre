@@ -16,6 +16,10 @@ if($setCenter) {
 if($setZoom) {
  conf.zoom =  $this.zoomLevel;
 }
+const customAttribution = $customAttribution;
+if(customAttribution) {
+    conf.attributionControl = { customAttribution: customAttribution };
+}
 
 this.map = new maplibregl.Map(conf);
 

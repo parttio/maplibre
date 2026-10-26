@@ -75,6 +75,7 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     private Polygon lastKnownViewPort;
     private boolean interactive = true;
     private boolean cooperativeGestures;
+    private final List<String> customAttributions = new ArrayList<>();
 
     public MapLibre() {
 
@@ -158,6 +159,27 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
         }
     }
 
+    /**
+     * Adds a custom attribution shown in the map's attribution control, alongside
+     * the base map and source attributions (in the same listing, not a separate
+     * control). This is the proper way to credit data whose source type cannot
+     * carry an attribution itself, such as an
+     * {@link org.vaadin.addons.maplibre.dto.ImageMapSource image} overlay.
+     * <p>
+     * Must be called before the map is attached/initialized (e.g. in the
+     * constructor of your view); MapLibre only accepts custom attribution when the
+     * attribution control is created.
+     *
+     * @param attribution the attribution text (may contain HTML, e.g. a link)
+     */
+    public void addCustomAttribution(String attribution) {
+        if (initialized) {
+            throw new IllegalStateException(
+                    "Custom attribution must be added before the map is initialized/attached.");
+        }
+        customAttributions.add(attribution);
+    }
+
     private void init() {
         if (!initialized) {
             if(getWidth() == null && getMinWidth() == null) {
@@ -175,7 +197,9 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
                     "setCenter", center != null,
                     "setZoom", zoomLevel != null,
                     "interactive", interactive,
-                    "cooperativeGestures", cooperativeGestures
+                    "cooperativeGestures", cooperativeGestures,
+                    "customAttribution", customAttributions.isEmpty() ? "null"
+                            : AbstractKebabCasedDto.mapper.writeValueAsString(customAttributions)
             ));
             initialized = true;
         }

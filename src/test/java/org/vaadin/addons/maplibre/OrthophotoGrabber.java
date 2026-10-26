@@ -21,7 +21,6 @@ import org.vaadin.firitin.components.RichText;
 
 import java.net.URI;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Grabs a National Land Survey of Finland orthophoto around a chosen point: the
@@ -59,7 +58,6 @@ public class OrthophotoGrabber extends VerticalLayout {
     private final Pre details = new Pre("No orthophoto generated yet.");
     private SourceLayer current;
     private boolean started;
-    private boolean attributionAdded;
 
     public OrthophotoGrabber() throws Exception {
         add(new RichText().withMarkDown("""
@@ -73,6 +71,9 @@ public class OrthophotoGrabber extends VerticalLayout {
                 and its location are saved on the server (temp dir).""".formatted(FADE_OUT_ZOOM)));
 
         map = new MapLibre(new URI(MAPTILER));
+        // The image overlay's source type cannot carry attribution, so credit the
+        // orthophoto data via the map's attribution control instead.
+        map.addCustomAttribution("© Maanmittauslaitos");
         map.setCenter(TEST_LON, TEST_LAT);
         map.setZoomLevel(15);
         map.setWidth("100%");
@@ -150,7 +151,6 @@ public class OrthophotoGrabber extends VerticalLayout {
                 new ZoomStep(FADE_IN_ZOOM, 1.0)));
         layer.setPaint(paint);
         current = map.addSourceLayer(layer);
-        addMmlAttribution();
 
         map.flyTo(result.centerLon(), result.centerLat(), 16.0);
 
@@ -171,24 +171,5 @@ public class OrthophotoGrabber extends VerticalLayout {
 
     private static String formatLngLat(LngLat ll) {
         return String.format(Locale.ROOT, "%.6f, %.6f", ll.lng(), ll.lat());
-    }
-
-    /**
-     * MapLibre's "image" source type does not support an attribution property, so
-     * the credit cannot be attached to the overlay itself. Instead we replace the
-     * default attribution control with one that adds a custom attribution — it still
-     * aggregates the base map's source attributions, so MML ends up in the same
-     * copyright listing rather than a separate box. Done once.
-     */
-    private void addMmlAttribution() {
-        if (attributionAdded) {
-            return;
-        }
-        attributionAdded = true;
-        map.js("""
-                const existing = (map._controls || []).find(c => c instanceof maplibregl.AttributionControl);
-                if (existing) { map.removeControl(existing); }
-                map.addControl(new maplibregl.AttributionControl({ customAttribution: '© Maanmittauslaitos' }));
-                """, Map.of());
     }
 }
