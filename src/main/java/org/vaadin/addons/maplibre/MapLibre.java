@@ -22,7 +22,6 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
-import org.parttio.vaadinjsloader.JSLoader;
 import org.vaadin.addons.maplibre.dto.AbstractKebabCasedDto;
 import org.vaadin.addons.maplibre.dto.AbstractMapSource;
 import org.vaadin.addons.maplibre.dto.AnimationOptions;
@@ -56,6 +55,11 @@ import java.util.logging.Logger;
  */
 @Tag("div")
 public class MapLibre extends AbstractVelocityJsComponent implements HasSize, HasStyle {
+
+    /**
+     * The MapLibre GL JS version loaded by default from unpkg.com.
+     */
+    public static final String MAPLIBRE_VERSION = "6.16.0";
 
     static GeometryFactory gf = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), 4326);
 
@@ -231,7 +235,14 @@ public class MapLibre extends AbstractVelocityJsComponent implements HasSize, Ha
     protected void loadMapLibreJs() {
         UI current = UI.getCurrent();
         if(current != null) {
-            JSLoader.loadUnpkg(this, "maplibre-gl", "5.24.0", "dist/maplibre-gl.js", "dist/maplibre-gl.css");
+            String dist = "https://unpkg.com/maplibre-gl@" + MAPLIBRE_VERSION + "/dist/";
+            current.getPage().addStyleSheet(dist + "maplibre-gl.css");
+            // MapLibre 6+ is ESM-only (no UMD bundle defining the maplibregl global).
+            // Expose the module as the maplibregl global, as the rest of the add-on
+            // expects. Eager module dependencies are loaded before the following
+            // JS invocations (e.g. mapinit.js) are executed.
+            current.getPage().addJsModule("data:text/javascript,import * as m from '"
+                    + dist + "maplibre-gl.mjs'; window.maplibregl = m;");
         }
     }
 
